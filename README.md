@@ -36,6 +36,20 @@ La cuenta de demostración es:
 - Usuario: `demo`
 - Contraseña: `demo123`
 
+## Cómo ejecutar el Login
+
+Desde PowerShell, dentro de la carpeta del proyecto:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\ejecutar.ps1
+```
+
+Después entra a `http://localhost:8080` en el navegador. Para verificar el flujo automáticamente:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\verificar-login.ps1
+```
+
 ## Estructura principal
 
 ```text
@@ -47,4 +61,3 @@ docs/                       guías, horas, pruebas y planificación
 ```
 
 Para ver las instrucciones de cada persona, revisa los archivos dentro de `docs/tareas` y los `README.txt` de cada módulo.
-
