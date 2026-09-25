@@ -24,10 +24,11 @@ formulario.addEventListener('submit', async (evento) => {
     mostrarMensaje('Revisando datos...', '');
 
     try {
+        const datos = new URLSearchParams({ usuario, contrasena });
         const respuesta = await fetch('/api/login', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usuario, contrasena })
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: datos
         });
         const resultado = await respuesta.json();
 
