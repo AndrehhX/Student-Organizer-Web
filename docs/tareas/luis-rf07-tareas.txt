@@ -1,0 +1,18 @@
+RF07 - Registrar tareas - Luis
+
+Tu parte es registrar y guardar tareas o asignaciones.
+
+Qué debes preparar:
+- Clase Tarea.
+- Campos y validaciones necesarias.
+- Interfaz para registrar una tarea.
+- Persistencia de tareas.
+- Controlador que reciba y guarde los datos.
+- Pruebas de guardado y datos incompletos.
+
+Dónde trabajar:
+- src/main/java/modulos/tareas
+- Archivos propios de interfaz dentro de src/main/resources/public.
+
+Evita modificar el Login. Si necesitas algo compartido, avisa antes de cambiarlo.
+

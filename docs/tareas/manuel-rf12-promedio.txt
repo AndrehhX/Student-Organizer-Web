@@ -1,0 +1,17 @@
+RF12 - Calcular promedio general - Manuel
+
+Tu parte es calcular y mostrar el promedio general.
+
+Qué debes preparar:
+- Método calcularPromedio().
+- Manejo de lista vacía o sin calificaciones.
+- Conexión con el controlador de calificaciones.
+- Mostrar el resultado en la interfaz.
+- Pruebas con varios valores y con cero calificaciones.
+
+Dónde trabajar:
+- src/main/java/modulos/promedio
+- Archivos propios de interfaz dentro de src/main/resources/public.
+
+El método debe recibir o consultar las calificaciones de forma clara para que el resto del equipo pueda conectarlo.
+

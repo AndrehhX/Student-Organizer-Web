@@ -1,0 +1,18 @@
+RF03 - Registrar calificaciones - Fabricio
+
+Tu parte es registrar y guardar calificaciones.
+
+Qué debes preparar:
+- Clase Calificacion.
+- Validación de notas y campos.
+- Espacio de interfaz para ingresar una calificación.
+- Persistencia de calificaciones.
+- Controlador que reciba y guarde los datos.
+
+Dónde trabajar:
+- src/main/java/modulos/calificaciones
+- src/main/resources/public, creando archivos propios para tu módulo.
+- docs, para tu investigación de persistencia.
+
+Evita modificar el Login. Si necesitas algo compartido, avisa antes de cambiarlo.
+

@@ -1,0 +1,22 @@
+RF01 - Login - Andreh
+
+Tu parte es el inicio de sesión.
+
+Qué debe hacer:
+- Mostrar campos para usuario y contraseña.
+- Revisar que no estén vacíos.
+- Enviar los datos a Java.
+- Leer los usuarios del CSV mediante PersistenciaDatos.
+- Codificar la contraseña con Seguridad y compararla.
+- Mostrar acceso correcto o error.
+
+Dónde trabajar:
+- src/main/java/controlador
+- src/main/java/modelo
+- src/main/java/persistencia
+- src/main/java/util
+- src/main/java/servidor
+- src/main/resources/public
+
+Antes de abrir el Pull Request, prueba campos vacíos, usuario incorrecto, contraseña incorrecta y acceso con la cuenta demo.
+
