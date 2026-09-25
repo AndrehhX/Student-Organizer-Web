@@ -1,0 +1,153 @@
+:root {
+    color-scheme: dark;
+    --fondo: #0d1726;
+    --tarjeta: rgba(20, 34, 54, 0.94);
+    --borde: rgba(151, 181, 220, 0.18);
+    --texto: #f3f7ff;
+    --suave: #9eafc8;
+    --principal: #69a8ff;
+    --principal-oscuro: #357bd2;
+    --error: #ff9d9d;
+    --exito: #8ee0b3;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--texto);
+    background:
+        radial-gradient(circle at top left, rgba(62, 124, 218, 0.32), transparent 35%),
+        linear-gradient(135deg, #0a1220, var(--fondo));
+}
+
+.contenedor-principal {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    padding: 24px;
+}
+
+.tarjeta-login {
+    width: min(100%, 420px);
+    padding: 38px;
+    border: 1px solid var(--borde);
+    border-radius: 22px;
+    background: var(--tarjeta);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.marca {
+    display: grid;
+    width: 52px;
+    height: 52px;
+    place-items: center;
+    border-radius: 16px;
+    color: #07111f;
+    background: linear-gradient(135deg, #a7d0ff, var(--principal));
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.etiqueta {
+    margin: 24px 0 8px;
+    color: var(--principal);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+h1 {
+    margin: 0;
+    font-size: clamp(2rem, 7vw, 3rem);
+}
+
+.subtitulo,
+.nota-demo {
+    color: var(--suave);
+    line-height: 1.5;
+}
+
+.subtitulo {
+    margin: 10px 0 28px;
+}
+
+form {
+    display: grid;
+    gap: 10px;
+}
+
+label {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    outline: none;
+    color: var(--texto);
+    background: rgba(5, 14, 26, 0.7);
+    font: inherit;
+}
+
+input:focus {
+    border-color: var(--principal);
+    box-shadow: 0 0 0 3px rgba(105, 168, 255, 0.15);
+}
+
+button {
+    margin-top: 18px;
+    padding: 14px;
+    border: 0;
+    border-radius: 10px;
+    color: #07111f;
+    background: var(--principal);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 800;
+    transition: transform 160ms ease, background 160ms ease;
+}
+
+button:hover {
+    background: #8cc2ff;
+    transform: translateY(-1px);
+}
+
+button:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.mensaje {
+    min-height: 22px;
+    margin: 8px 0 0;
+    font-weight: 700;
+}
+
+.mensaje.error {
+    color: var(--error);
+}
+
+.mensaje.exito {
+    color: var(--exito);
+}
+
+.nota-demo {
+    margin: 26px 0 0;
+    font-size: 0.82rem;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .tarjeta-login {
+        padding: 28px 22px;
+    }
+}
