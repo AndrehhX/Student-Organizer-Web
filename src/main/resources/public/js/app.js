@@ -25,15 +25,28 @@ formulario.addEventListener('submit', async (evento) => {
 
     try {
         const datos = new URLSearchParams({ usuario, contrasena });
+
         const respuesta = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: datos
         });
+
         const resultado = await respuesta.json();
 
-        mostrarMensaje(resultado.mensaje,
-            resultado.exitoso ? 'exito' : 'error');
+        // Mostrar el mensaje que envía el servidor
+        mostrarMensaje(
+            resultado.mensaje,
+            resultado.exitoso ? 'exito' : 'error'
+        );
+
+        // Si el login fue correcto, esperar 1 segundo y cambiar de página
+        if (resultado.exitoso) {
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 1000);
+        }
+
     } catch (error) {
         mostrarMensaje('No se pudo conectar con el servidor Java.', 'error');
     } finally {

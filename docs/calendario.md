@@ -6,6 +6,7 @@ Completen las fechas cuando el grupo acuerde el calendario definitivo.
 |---|---|---|---|---|
 | Preparar Login | Andreh | | | En progreso |
 | Registrar calificaciones | Fabricio | | | Pendiente |
+| Crear la forma base de lo visual | Fabricio || En progreso| 
 | Calcular promedio | Manuel | | | Pendiente |
 | Registrar tareas | Luis | | | Pendiente |
 | Integrar módulos | Todo el equipo | | | Pendiente |
