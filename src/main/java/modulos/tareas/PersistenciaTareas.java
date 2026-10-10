@@ -14,7 +14,7 @@ public class PersistenciaTareas {
     private final Path rutaArchivo;
 
     public PersistenciaTareas() {
-        this(Paths.get("datos", "tareas.csv"));
+        this(Paths.get("data", "tareas.csv"));
     }
 
     public PersistenciaTareas(Path rutaArchivo) {

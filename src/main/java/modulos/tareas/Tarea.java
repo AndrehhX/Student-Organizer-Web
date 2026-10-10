@@ -9,9 +9,9 @@ public class Tarea {
 
 
     public Tarea(String nombre, String fechaEntrega, String prioridad) {
-        this.nombre = nombre;
-        this.fechaEntrega = fechaEntrega;
-        this.prioridad = prioridad;
+        setNombre(nombre);
+        setfechaEntrega(fechaEntrega);
+        setPrioridad(prioridad);
         this.completada = false;
     }
 

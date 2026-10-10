@@ -9,9 +9,17 @@ public class controladorTareas {
     private final PersistenciaTareas persistencia;
 
     public controladorTareas() {
-        this.persistencia = new PersistenciaTareas();
+        this(new PersistenciaTareas());
+    }
+
+    public controladorTareas(PersistenciaTareas persistencia) {
+        this.persistencia = persistencia;
         this.listaTareas = persistencia.cargarTareas();
     }
+
+
+    
+
 
     public void registrartarea(String nombre, String fechaEntrega,
                                String prioridad) {
