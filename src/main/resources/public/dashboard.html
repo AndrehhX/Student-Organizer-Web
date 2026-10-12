@@ -109,12 +109,35 @@
                 </div>
                 
                 <!-- contenido -->
-                <div class="flex-1 bg-brand-bright/30 rounded-xl p-4 border border-dashed border-brand-medium/40 min-h-[220px] flex flex-col justify-center items-center text-center">
-                    <i data-lucide="layout-grid" class="w-10 h-10 text-brand-medium/40 mb-2"></i>
-                    <p class="text-brand-black/70 font-medium">Contenedor de Lista de Tareas</p>
-                    <p class="text-xs text-gray-500 mt-1 max-w-sm">
-                    
-                    </p>
+                <div class="flex-1 bg-brand-bright/30 rounded-xl p-4 border border-dashed border-brand-medium/40 min-h-[220px]">
+                    <form id="form-tarea" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-5">
+                        <label class="sr-only" for="nombre-tarea">Nombre de la tarea</label>
+                        <input id="nombre-tarea" name="nombre" type="text"
+                               placeholder="Nombre de la tarea" required
+                               class="rounded-lg border border-brand-medium/30 px-3 py-2">
+
+                        <label class="sr-only" for="fecha-tarea">Fecha de entrega</label>
+                        <input id="fecha-tarea" name="fechaEntrega" type="date"
+                               required class="rounded-lg border border-brand-medium/30 px-3 py-2">
+
+                        <label class="sr-only" for="prioridad-tarea">Prioridad</label>
+                        <select id="prioridad-tarea" name="prioridad"
+                                class="rounded-lg border border-brand-medium/30 px-3 py-2">
+                            <option value="alta">Alta</option>
+                            <option value="media" selected>Media</option>
+                            <option value="baja">Baja</option>
+                        </select>
+
+                        <button type="submit"
+                                class="rounded-lg bg-brand-medium px-3 py-2 font-semibold text-white hover:bg-brand-dark">
+                            Agregar tarea
+                        </button>
+                    </form>
+
+                    <p id="mensaje-tareas" class="mb-3 text-sm" role="status" aria-live="polite"></p>
+                    <div id="lista-tareas" class="grid gap-3">
+                        <p class="text-sm text-gray-500">Cargando tareas...</p>
+                    </div>
                 </div>
             </section>
 
@@ -191,9 +214,12 @@
         const toggleBtn = document.getElementById('toggle-sidebar-btn');
         const sidebar = document.getElementById('sidebar');
 
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('hidden');
-        });
+        if (toggleBtn && sidebar) {
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('hidden');
+            });
+        }
     </script>
+    <script src="/js/tareas.js"></script>
 </body>
 </html>
