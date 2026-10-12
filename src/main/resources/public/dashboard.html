@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carcasa Web - Dashboard</title>
+    <title>Student Organizer | Panel principal</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
     <!-- Tailwind CSS desde CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -33,7 +34,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 text-brand-black min-h-screen flex flex-col">
+<body class="dashboard-animado bg-gray-100 text-brand-black min-h-screen flex flex-col">
 
     <!--ENCABEZADO SUPERIOR 
     <header class="bg-brand-dark text-brand-white shadow-md sticky top-0 z-50">
@@ -52,20 +53,25 @@
             <!--Log Off & Notificaciones -->
             <div class="flex items-center space-x-3 sm:space-x-4">
                 <!-- Botón Notificaciones -->
-                <button class="relative p-2 rounded-lg hover:bg-brand-medium text-brand-white transition-colors focus:outline-none focus:ring-2 focus:ring-brand-light" title="Notificaciones">
+                <button id="boton-notificaciones" class="relative p-2 rounded-lg hover:bg-brand-medium text-brand-white transition-colors focus:outline-none focus:ring-2 focus:ring-brand-light" title="Notificaciones" aria-expanded="false" aria-controls="panel-notificaciones">
                     <i data-lucide="bell" class="w-6 h-6"></i>
                     <!-- Indicador de notificación -->
                     <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-brand-light rounded-full ring-2 ring-brand-dark"></span>
                 </button>
 
                 <!--Botón Log off -->
-                <button class="flex items-center space-x-2 bg-brand-black hover:bg-brand-darkgray text-brand-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-colors border border-brand-medium">
+                <button id="boton-cerrar-sesion" class="boton-dashboard flex items-center space-x-2 bg-brand-black hover:bg-brand-darkgray text-brand-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-colors border border-brand-medium">
                     <i data-lucide="log-out" class="w-4 h-4"></i>
                     <span class="hidden sm:inline">Log off</span>
                 </button>
             </div>
         </div>
     </header>
+
+    <div id="panel-notificaciones" class="panel-notificaciones hidden" role="status" aria-live="polite">
+        <strong>Notificaciones</strong>
+        <p>No tienes notificaciones nuevas.</p>
+    </div>
 
     <!-- MENU LATERAL  -->
     <div class="flex-1 flex max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6 relative">
@@ -77,30 +83,30 @@
             </div>
             
             <nav class="space-y-2 flex-1">
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-brand-medium text-brand-white font-medium hover:bg-brand-light hover:text-brand-dark transition-all shadow-sm">
+                <a href="#panel-tareas" data-seccion="tareas" class="enlace-seccion flex items-center space-x-3 px-4 py-3 rounded-xl bg-brand-medium text-brand-white font-medium hover:bg-brand-light hover:text-brand-dark transition-all shadow-sm">
                     <i data-lucide="check-square" class="w-5 h-5"></i>
                     <span>Tareas</span>
                 </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-brand-medium text-brand-white font-medium transition-all">
+                <a href="#panel-notas" data-seccion="notas" class="enlace-seccion flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-brand-medium text-brand-white font-medium transition-all">
                     <i data-lucide="file-text" class="w-5 h-5"></i>
                     <span>Notas</span>
                 </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-brand-medium text-brand-white font-medium transition-all">
+                <a href="#panel-cursos" data-seccion="cursos" class="enlace-seccion flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-brand-medium text-brand-white font-medium transition-all">
                     <i data-lucide="book-open" class="w-5 h-5"></i>
                     <span>Cursos</span>
                 </a>
             </nav>
 
             <div class="pt-4 border-t border-brand-medium text-xs text-brand-light text-center">
-                Carcasa HTML / Layout
+                Student Organizer
             </div>
         </aside>
 
         <!-- CONTENIDO (DASHBOARD) -->
-        <main class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <main id="panel-tareas" class="panel-dashboard flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
 
             <!-- TARJETA 1: Tareas por hacer -->
-            <section class="md:col-span-2 bg-brand-white border-2 border-brand-dark/10 rounded-2xl p-6 shadow-sm flex flex-col">
+            <section class="panel-dashboard-card md:col-span-2 bg-brand-white border-2 border-brand-dark/10 rounded-2xl p-6 shadow-sm flex flex-col">
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
                     <h2 class="text-xl font-bold text-brand-dark flex items-center gap-2">
                         <i data-lucide="list-todo" class="w-6 h-6 text-brand-medium"></i>
@@ -142,7 +148,7 @@
             </section>
 
             <!-- Promedio -->
-            <section class="bg-brand-white border-2 border-brand-dark/10 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+            <section class="panel-dashboard-card bg-brand-white border-2 border-brand-dark/10 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-brand-dark flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
                         <i data-lucide="award" class="w-6 h-6 text-brand-medium"></i>
@@ -162,7 +168,7 @@
             </section>
 
             <!-- TARJETA 3: Ranking de notas  -->
-            <section class="md:col-span-3 bg-brand-white border-2 border-brand-dark/10 rounded-2xl p-6 shadow-sm">
+            <section class="panel-dashboard-card md:col-span-3 bg-brand-white border-2 border-brand-dark/10 rounded-2xl p-6 shadow-sm">
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
                     <h2 class="text-xl font-bold text-brand-dark flex items-center gap-2">
                         <i data-lucide="bar-chart-3" class="w-6 h-6 text-brand-medium"></i>
@@ -204,6 +210,28 @@
             </section>
 
         </main>
+
+        <section id="panel-notas" class="panel-dashboard-card panel-seccion-extra hidden flex-1 bg-brand-white border-2 border-brand-dark/10 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+                <i data-lucide="file-text" class="w-6 h-6 text-brand-medium"></i>
+                <h2 class="text-xl font-bold text-brand-dark">Notas</h2>
+            </div>
+            <div class="panel-vacio rounded-xl border border-dashed border-brand-medium/40 bg-brand-bright/30 p-8 text-center">
+                <p class="text-lg font-semibold text-brand-dark">Sección lista para conectar</p>
+                <p class="mt-2 text-sm text-gray-600">Aquí se podrán consultar y organizar las notas de cada curso cuando se conecte esa parte de la base de datos.</p>
+            </div>
+        </section>
+
+        <section id="panel-cursos" class="panel-dashboard-card panel-seccion-extra hidden flex-1 bg-brand-white border-2 border-brand-dark/10 rounded-2xl p-6 shadow-sm">
+            <div class="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+                <i data-lucide="book-open" class="w-6 h-6 text-brand-medium"></i>
+                <h2 class="text-xl font-bold text-brand-dark">Cursos</h2>
+            </div>
+            <div class="panel-vacio rounded-xl border border-dashed border-brand-medium/40 bg-brand-bright/30 p-8 text-center">
+                <p class="text-lg font-semibold text-brand-dark">Sección lista para conectar</p>
+                <p class="mt-2 text-sm text-gray-600">Aquí se podrán mostrar los cursos del estudiante cuando se termine de conectar esa información.</p>
+            </div>
+        </section>
     </div>
 
     <script>
@@ -221,5 +249,6 @@
         }
     </script>
     <script src="/js/tareas.js"></script>
+    <script src="/js/dashboard.js"></script>
 </body>
 </html>
