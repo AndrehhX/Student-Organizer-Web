@@ -36,12 +36,11 @@ function mostrarTareas(tareas) {
 
         const accion = document.createElement('button');
         accion.type = 'button';
-        accion.className = 'rounded-lg px-3 py-2 text-sm font-semibold text-white';
         accion.textContent = tarea.completada ? 'Completada' : 'Marcar completada';
         accion.disabled = tarea.completada;
-        accion.classList.add(tarea.completada
-            ? 'bg-gray-400'
-            : 'bg-brand-medium hover:bg-brand-dark');
+        accion.className = tarea.completada
+            ? 'rounded-lg bg-gray-400 px-3 py-2 text-sm font-semibold text-white'
+            : 'rounded-lg bg-brand-medium px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark';
         accion.addEventListener('click', () => completarTarea(tarea.indice));
 
         tarjeta.append(informacion, accion);

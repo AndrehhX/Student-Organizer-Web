@@ -24,4 +24,8 @@ if ($javascript -notmatch "'/api/tareas/completar'") {
     throw "El JavaScript no conecta la acción de completar tareas."
 }
 
+if ($javascript -match 'classList\.add\(tarea\.completada') {
+    throw "El JavaScript intenta agregar varias clases como un solo nombre."
+}
+
 Write-Output "VerificarDashboard: la interfaz está conectada con las tareas."
