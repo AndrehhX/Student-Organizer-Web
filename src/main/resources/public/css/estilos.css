@@ -1,14 +1,15 @@
 :root {
-    color-scheme: dark;
-    --fondo: #0d1726;
-    --tarjeta: rgba(20, 34, 54, 0.94);
-    --borde: rgba(151, 181, 220, 0.18);
-    --texto: #f3f7ff;
-    --suave: #9eafc8;
-    --principal: #69a8ff;
-    --principal-oscuro: #357bd2;
-    --error: #ff9d9d;
-    --exito: #8ee0b3;
+    color-scheme: light;
+    --fondo: #f1f5f2;
+    --tarjeta: #ffffff;
+    --borde: rgba(27, 67, 50, 0.14);
+    --texto: #121212;
+    --suave: #65736a;
+    --principal: #2d6a4f;
+    --principal-oscuro: #1b4332;
+    --acento: #d8f3dc;
+    --error: #a33a3a;
+    --exito: #2d6a4f;
 }
 
 * {
@@ -20,9 +21,7 @@ body {
     margin: 0;
     font-family: Arial, Helvetica, sans-serif;
     color: var(--texto);
-    background:
-        radial-gradient(circle at top left, rgba(62, 124, 218, 0.32), transparent 35%),
-        linear-gradient(135deg, #0a1220, var(--fondo));
+    background: var(--fondo);
 }
 
 .contenedor-principal {
@@ -36,9 +35,9 @@ body {
     width: min(100%, 420px);
     padding: 38px;
     border: 1px solid var(--borde);
-    border-radius: 22px;
+    border-radius: 16px;
     background: var(--tarjeta);
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 12px 30px rgba(27, 67, 50, 0.1);
 }
 
 .marca {
@@ -46,9 +45,9 @@ body {
     width: 52px;
     height: 52px;
     place-items: center;
-    border-radius: 16px;
-    color: #07111f;
-    background: linear-gradient(135deg, #a7d0ff, var(--principal));
+    border-radius: 12px;
+    color: var(--principal-oscuro);
+    background: var(--acento);
     font-weight: 800;
     letter-spacing: 1px;
 }
