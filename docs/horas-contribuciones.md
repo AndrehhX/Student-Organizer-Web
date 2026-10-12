@@ -4,9 +4,9 @@ Este documento es para que cada integrante registre su propio trabajo. La idea e
 
 No hace falta escribir un ensayo. Con una fila por actividad es suficiente.
 
-| Integrante | Requisito | Fecha | Actividad realizada | Hora de inicio | Hora de fin | Total de horas | Commit, PR o archivo relacionado |
+| Integrante | Requisito |         Fecha      | Actividad realizada | Hora de inicio | Hora de fin | Total de horas | Commit, PR o archivo relacionado |
 |---|---|---|---|---|---|---:|---|
-| Andreh | RF01 Login | | | | | | |
+| Andreh    | RF01 Login| 2,11,12 de octubre| | Login y correciones | 13:00H         |15:00h       | 12H            | Commits en main y brenchs
 | Andreh | RF01 Login | | | | | | |
 | Andreh | RF01 Login | | | | | | |
 | Fabricio | RF03 Calificaciones | | | | | | |
