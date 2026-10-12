@@ -90,34 +90,33 @@ input {
     width: 100%;
     padding: 13px 14px;
     border: 1px solid var(--borde);
-    border-radius: 10px;
+    border-radius: 8px;
     outline: none;
     color: var(--texto);
-    background: rgba(5, 14, 26, 0.7);
+    background: #f8fbf8;
     font: inherit;
 }
 
 input:focus {
     border-color: var(--principal);
-    box-shadow: 0 0 0 3px rgba(105, 168, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.14);
 }
 
 button {
     margin-top: 18px;
     padding: 14px;
     border: 0;
-    border-radius: 10px;
-    color: #07111f;
-    background: var(--principal);
+    border-radius: 8px;
+    color: #ffffff;
+    background: var(--principal-oscuro);
     cursor: pointer;
     font: inherit;
     font-weight: 800;
-    transition: transform 160ms ease, background 160ms ease;
+    transition: background 160ms ease;
 }
 
 button:hover {
-    background: #8cc2ff;
-    transform: translateY(-1px);
+    background: var(--principal);
 }
 
 button:disabled {
@@ -137,6 +136,11 @@ button:disabled {
 
 .mensaje.exito {
     color: var(--exito);
+}
+
+.nota-demo {
+    padding-top: 14px;
+    border-top: 1px solid var(--borde);
 }
 
 .nota-demo {
