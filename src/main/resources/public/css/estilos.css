@@ -16,6 +16,28 @@
     box-sizing: border-box;
 }
 
+@keyframes aparecer-tarjeta {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes aparecer-marca {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 body {
     min-height: 100vh;
     margin: 0;
@@ -38,6 +60,7 @@ body {
     border-radius: 16px;
     background: var(--tarjeta);
     box-shadow: 0 12px 30px rgba(27, 67, 50, 0.1);
+    animation: aparecer-tarjeta 450ms ease-out both;
 }
 
 .marca {
@@ -50,6 +73,7 @@ body {
     background: var(--acento);
     font-weight: 800;
     letter-spacing: 1px;
+    animation: aparecer-marca 350ms ease-out 100ms both;
 }
 
 .etiqueta {
@@ -95,6 +119,8 @@ input {
     color: var(--texto);
     background: #f8fbf8;
     font: inherit;
+    transition: border-color 180ms ease, box-shadow 180ms ease,
+        background-color 180ms ease;
 }
 
 input:focus {
@@ -112,11 +138,16 @@ button {
     cursor: pointer;
     font: inherit;
     font-weight: 800;
-    transition: background 160ms ease;
+    transition: background 160ms ease, transform 160ms ease;
 }
 
 button:hover {
     background: var(--principal);
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
 }
 
 button:disabled {
@@ -128,6 +159,7 @@ button:disabled {
     min-height: 22px;
     margin: 8px 0 0;
     font-weight: 700;
+    transition: color 180ms ease, opacity 180ms ease;
 }
 
 .mensaje.error {
@@ -147,6 +179,17 @@ button:disabled {
     margin: 26px 0 0;
     font-size: 0.82rem;
     text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 1ms !important;
+    }
 }
 
 @media (max-width: 480px) {
