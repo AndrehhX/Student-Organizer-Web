@@ -39,6 +39,7 @@ public class ServidorWeb {
     public void iniciar() throws IOException {
         servidor = HttpServer.create(new InetSocketAddress(puerto), 0);
         servidor.createContext("/api/login", this::manejarLogin);
+        servidor.createContext("/api/logout", this::manejarLogout);
         servidor.createContext("/api/tareas/completar", this::completarTarea);
         servidor.createContext("/api/tareas", this::manejarTareas);
         servidor.createContext("/", this::servirArchivo);
@@ -74,6 +75,18 @@ public class ServidorWeb {
                 : "Usuario o contraseña incorrectos.";
         responder(intercambio, 200, "{\"exitoso\":" + accesoCorrecto
                 + ",\"mensaje\":\"" + escaparJson(mensaje) + "\"}");
+    }
+
+    private void manejarLogout(HttpExchange intercambio) throws IOException {
+        if (!"POST".equalsIgnoreCase(intercambio.getRequestMethod())) {
+            responder(intercambio, 405,
+                    "{\"mensaje\":\"MÃ©todo no permitido.\"}");
+            return;
+        }
+
+        controladorLogin.cerrarSesion();
+        responder(intercambio, 200,
+                "{\"exitoso\":true,\"mensaje\":\"SesiÃ³n cerrada.\"}");
     }
 
     private void manejarTareas(HttpExchange intercambio) throws IOException {
