@@ -13,3 +13,19 @@ Las pruebas de esta se ejecutan en `src/test/java/PruebasTareas.java` . usan un 
 | Crear directamente una `Tarea` sin nombre | Rechazar | paso |
 | Intentar registrar datos incompletos | no modificar CSV | paso |
 | Marcar una tarea como completada | Guardar su estado y quitarla de pendientes | paso |
+
+Esta prueba no necesita MySQL ni el driver JDBC.
+
+Comprueba el registro y recuperación de tareas, el rechazo de campos incompletos y la persistencia del estado completado. 
+
+### Ejecutar
+
+```powershell
+& (Join-Path (Split-Path -Parent (Get-Command javac).Source) "java.exe") -cp "out" PruebasTareas
+```
+
+Resultado esperado:
+
+```text
+PruebasTareas: todas las pruebas pasaron.
+```
