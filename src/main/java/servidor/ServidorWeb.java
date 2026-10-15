@@ -5,7 +5,10 @@ import com.sun.net.httpserver.HttpServer;
 import controlador.ControladorLogin;
 import modulos.calificaciones.Calificacion;
 import modulos.calificaciones.ControladorCalificaciones;
+import modulos.calificaciones.RepositorioCalificaciones;
 import modulos.calificaciones.RepositorioCalificacionesMemoria;
+import modulos.promedio.ControladorPromedios;
+import modulos.promedio.ResultadoPromedio;
 import modulos.tareas.Tarea;
 import modulos.tareas.controladorTareas;
 
@@ -21,6 +24,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class ServidorWeb {
     private final ControladorLogin controladorLogin;
@@ -28,6 +32,7 @@ public class ServidorWeb {
     private final int puerto;
     private final controladorTareas controladorTareas;
     private final ControladorCalificaciones controladorCalificaciones;
+    private final ControladorPromedios controladorPromedios;
     private HttpServer servidor;
 
     public ServidorWeb(ControladorLogin controladorLogin, Path carpetaPublica, int puerto) {
@@ -40,10 +45,17 @@ public class ServidorWeb {
         this.carpetaPublica = carpetaPublica.toAbsolutePath().normalize();
         this.puerto = puerto;
         this.controladorTareas = controladorTareas;
+        // RF03 y RF12 comparten el mismo repositorio de calificaciones.
+        RepositorioCalificaciones repositorioCalificaciones =
+            new RepositorioCalificacionesMemoria();
+
         this.controladorCalificaciones =
         new ControladorCalificaciones(
-            new RepositorioCalificacionesMemoria()
+            repositorioCalificaciones
         );
+
+        this.controladorPromedios =
+            new ControladorPromedios(repositorioCalificaciones);
     }
 
 
@@ -65,6 +77,11 @@ public class ServidorWeb {
             this::manejarCalificaciones
         );
 
+                // RF12 - Promedios
+        servidor.createContext(
+            "/api/promedios",
+            this::manejarPromedios
+        );
         servidor.createContext("/", this::servirArchivo);
 
         servidor.start();
@@ -231,6 +248,86 @@ public class ServidorWeb {
         return json.append("]").toString();
     }
 
+       // =====================================================
+    // RF12 - CONSULTAR PROMEDIOS
+    // =====================================================
+
+    private void manejarPromedios(HttpExchange intercambio)
+            throws IOException {
+
+        if (!"GET".equalsIgnoreCase(intercambio.getRequestMethod())) {
+            responder(intercambio, 405,
+                "{\"mensaje\":\"Método no permitido.\"}");
+            return;
+        }
+
+        // Identificacion temporal para pruebas locales.
+        // Pendiente: sesiones independientes por navegador.
+        Usuario usuario = controladorLogin.getUsuarioActual();
+
+        if (usuario == null) {
+            responder(intercambio, 401,
+                "{\"mensaje\":\"Debes iniciar sesión.\"}");
+            return;
+        }
+
+        try {
+            String idUsuario = usuario.getCarne();
+
+            Optional<BigDecimal> general =
+                controladorPromedios.obtenerPromedioGeneral(idUsuario);
+
+            List<ResultadoPromedio> cursos =
+                controladorPromedios.obtenerPromediosPorCurso(idUsuario);
+
+            responder(intercambio, 200,
+                convertirPromediosAJson(general, cursos));
+
+        } catch (IllegalArgumentException | IllegalStateException error) {
+
+            responder(intercambio, 500,
+                "{\"mensaje\":\"No se pudo calcular el promedio.\"}");
+        }
+    }
+
+    // =====================================================
+    // RF12 - CONVERTIR PROMEDIOS A JSON
+    // =====================================================
+
+    private String convertirPromediosAJson(
+            Optional<BigDecimal> general,
+            List<ResultadoPromedio> cursos) {
+
+        StringBuilder json = new StringBuilder("{\"promedioGeneral\":");
+
+        json.append(general.isPresent()
+            ? general.get().toPlainString()
+            : "null");
+
+        json.append(",\"cursos\":[");
+
+        for (int i = 0; i < cursos.size(); i++) {
+
+            if (i > 0) {
+                json.append(",");
+            }
+
+            ResultadoPromedio r = cursos.get(i);
+
+            json.append("{")
+                .append("\"idCurso\":\"")
+                .append(escaparJson(r.getIdCurso()))
+                .append("\",\"nombreCurso\":\"")
+                .append(escaparJson(r.getNombreCurso()))
+                .append("\",\"promedio\":")
+                .append(r.getPromedio().toPlainString())
+                .append(",\"cantidadCalificaciones\":")
+                .append(r.getCantidadCalificaciones())
+                .append("}");
+        }
+
+        return json.append("]}").toString();
+    }
     // =====================================================
     // DETENER SERVIDOR
     // =====================================================
