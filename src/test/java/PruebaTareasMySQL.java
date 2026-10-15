@@ -1,5 +1,7 @@
-import modulos.tareas.Tarea;
+import modulos.Cursos.Curso;
+import modulos.Cursos.RepositorioCursosMySQL;
 import modulos.tareas.PersistenciaTareasMySQL;
+import modulos.tareas.Tarea;
 import persistencia.ConexionBD;
 
 import java.sql.Connection;
@@ -38,10 +40,16 @@ public class PruebaTareasMySQL {
             usuarioId = resultado.getLong("id");
         }
 
+        // Las tareas ahora pertenecen a un curso del usuario.
+        Curso curso = new RepositorioCursosMySQL(bd).guardar(
+                usuarioId,
+                "Curso prueba tareas " + System.currentTimeMillis()
+        );
+
         Tarea tarea = new Tarea(
                 "Tarea creada desde Java",
                 "2026-10-30",
-                "alta"
+                curso.getIdCurso()
         );
 
         PersistenciaTareasMySQL persistencia =
@@ -51,5 +59,6 @@ public class PruebaTareasMySQL {
 
         System.out.println("Tarea guardada en MySQL. ID: " + tareaId);
         System.out.println("Usuario propietario. ID: " + usuarioId);
+        System.out.println("Curso. ID: " + curso.getIdCurso());
     }
 }
