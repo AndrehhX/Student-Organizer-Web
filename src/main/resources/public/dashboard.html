@@ -160,11 +160,11 @@
                     </div>
 
                     <div class="my-4 bg-brand-bright/40 rounded-xl p-6 border border-brand-light/50 flex flex-col items-center justify-center text-center">
-                        <span class="text-5xl font-extrabold text-brand-dark">--</span>
+                        <span id="promedio-general-valor" class="text-5xl font-extrabold text-brand-dark">--</span>
                         <span class="text-xs font-semibold text-brand-medium uppercase tracking-wider mt-2">Promedio General</span>
                     </div>
 
-                    <div class="text-center text-xs text-gray-400 font-mono"></div>
+                    <div id="promedio-general-detalle" class="text-center text-xs text-gray-400 font-mono" aria-live="polite"></div>
                 </section>
 
                 <!-- TARJETA 3: Ranking de notas -->
@@ -353,5 +353,6 @@
     <script src="/js/tareas.js"></script>
     <script src="/js/dashboard.js"></script>
     <script src="/js/calificaciones.js"></script>
+        <script src="/js/promedios.js"></script>
 </body>
 </html>
