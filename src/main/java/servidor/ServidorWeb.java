@@ -1,18 +1,23 @@
 package servidor;
-
+import modelo.Usuario;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import controlador.ControladorLogin;
+import modulos.calificaciones.Calificacion;
+import modulos.calificaciones.ControladorCalificaciones;
+import modulos.calificaciones.RepositorioCalificacionesMemoria;
 import modulos.tareas.Tarea;
 import modulos.tareas.controladorTareas;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +27,7 @@ public class ServidorWeb {
     private final Path carpetaPublica;
     private final int puerto;
     private final controladorTareas controladorTareas;
+    private final ControladorCalificaciones controladorCalificaciones;
     private HttpServer servidor;
 
     public ServidorWeb(ControladorLogin controladorLogin, Path carpetaPublica, int puerto) {
@@ -34,17 +40,200 @@ public class ServidorWeb {
         this.carpetaPublica = carpetaPublica.toAbsolutePath().normalize();
         this.puerto = puerto;
         this.controladorTareas = controladorTareas;
+        this.controladorCalificaciones =
+        new ControladorCalificaciones(
+            new RepositorioCalificacionesMemoria()
+        );
     }
+
+
+    // =====================================================
+    // INICIAR SERVIDOR WEB
+    // =====================================================
 
     public void iniciar() throws IOException {
         servidor = HttpServer.create(new InetSocketAddress(puerto), 0);
+
         servidor.createContext("/api/login", this::manejarLogin);
         servidor.createContext("/api/logout", this::manejarLogout);
         servidor.createContext("/api/tareas/completar", this::completarTarea);
         servidor.createContext("/api/tareas", this::manejarTareas);
+
+        // RF03 - Calificaciones
+        servidor.createContext(
+            "/api/calificaciones",
+            this::manejarCalificaciones
+        );
+
         servidor.createContext("/", this::servirArchivo);
+
         servidor.start();
     }
+
+    // =====================================================
+    // RF03 - REGISTRAR Y CONSULTAR CALIFICACIONES
+    // =====================================================
+
+    private void manejarCalificaciones(HttpExchange intercambio)
+            throws IOException {
+
+        String metodo = intercambio.getRequestMethod();
+
+        if (!"GET".equalsIgnoreCase(metodo)
+                && !"POST".equalsIgnoreCase(metodo)) {
+
+            responder(intercambio, 405,
+                "{\"mensaje\":\"Método no permitido.\"}");
+            return;
+        }
+
+        // Identificacion temporal para pruebas locales.
+        // Pendiente: sesiones independientes por navegador.
+        Usuario usuario = controladorLogin.getUsuarioActual();
+
+        if (usuario == null) {
+            responder(intercambio, 401,
+                "{\"mensaje\":\"Debes iniciar sesión.\"}");
+            return;
+        }
+
+        String idUsuario = usuario.getCarne();
+
+        // =================================================
+        // CONSULTAR CALIFICACIONES
+        // =================================================
+
+        if ("GET".equalsIgnoreCase(metodo)) {
+
+            List<Calificacion> calificaciones =
+                controladorCalificaciones.listarCalificaciones(
+                    idUsuario
+                );
+
+            responder(intercambio, 200,
+                convertirCalificacionesAJson(calificaciones));
+
+            return;
+        }
+
+        // =================================================
+        // REGISTRAR CALIFICACION
+        // =================================================
+
+        try {
+            String tipo = intercambio.getRequestHeaders()
+                .getFirst("Content-Type");
+
+            if (tipo == null || !tipo.toLowerCase()
+                    .startsWith("application/x-www-form-urlencoded")) {
+
+                responder(intercambio, 415,
+                    "{\"mensaje\":\"Formato no admitido.\"}");
+                return;
+            }
+
+            Map<String, String> datos =
+                leerFormulario(leerCuerpo(intercambio));
+
+            String idCurso = datos.get("idCurso");
+            String nombreCurso = datos.get("nombreCurso");
+            String nombreActividad = datos.get("nombreActividad");
+
+            if (idCurso == null || nombreCurso == null
+                    || nombreActividad == null
+                    || datos.get("notaObtenida") == null
+                    || datos.get("notaMaxima") == null
+                    || datos.get("fecha") == null) {
+
+                responder(intercambio, 400,
+                    "{\"exitoso\":false,\"mensaje\":\"Faltan datos de la calificación.\"}");
+                return;
+            }
+
+            BigDecimal notaObtenida =
+                new BigDecimal(datos.get("notaObtenida"));
+
+            BigDecimal notaMaxima =
+                new BigDecimal(datos.get("notaMaxima"));
+
+            LocalDate fecha =
+                LocalDate.parse(datos.get("fecha"));
+
+            Calificacion registrada =
+                controladorCalificaciones.registrarCalificacion(
+                    idUsuario,
+                    idCurso,
+                    nombreCurso,
+                    nombreActividad,
+                    notaObtenida,
+                    notaMaxima,
+                    fecha
+                );
+
+            responder(intercambio, 201,
+                "{\"exitoso\":true,\"mensaje\":\"Calificación registrada.\","
+                + "\"idCalificacion\":\""
+                + escaparJson(registrada.getIdCalificacion())
+                + "\"}");
+
+        } catch (IllegalArgumentException error) {
+
+            responder(intercambio, 400,
+                "{\"exitoso\":false,\"mensaje\":\"Datos de calificación inválidos.\"}");
+
+        } catch (java.time.DateTimeException error) {
+
+            responder(intercambio, 400,
+                "{\"exitoso\":false,\"mensaje\":\"Fecha inválida.\"}");
+
+        } catch (IllegalStateException error) {
+
+            responder(intercambio, 409,
+                "{\"exitoso\":false,\"mensaje\":\"La calificación ya existe.\"}");
+        }
+    }
+
+    // =====================================================
+    // RF03 - CONVERTIR CALIFICACIONES A JSON
+    // =====================================================
+
+    private String convertirCalificacionesAJson(
+            List<Calificacion> calificaciones) {
+
+        StringBuilder json = new StringBuilder("[");
+
+        for (int i = 0; i < calificaciones.size(); i++) {
+
+            if (i > 0) {
+                json.append(",");
+            }
+
+            Calificacion c = calificaciones.get(i);
+
+            json.append("{")
+                .append("\"idCalificacion\":\"")
+                .append(escaparJson(c.getIdCalificacion()))
+                .append("\",\"idCurso\":\"")
+                .append(escaparJson(c.getIdCurso()))
+                .append("\",\"nombreCurso\":\"")
+                .append(escaparJson(c.getNombreCurso()))
+                .append("\",\"nombreActividad\":\"")
+                .append(escaparJson(c.getNombreActividad()))
+                .append("\",\"notaObtenida\":")
+                .append(c.getNotaObtenida().toPlainString())
+                .append(",\"notaMaxima\":")
+                .append(c.getNotaMaxima().toPlainString())
+                .append(",\"fecha\":\"")
+                .append(c.getFecha())
+                .append("\"}");
+        }
+
+        return json.append("]").toString();
+    }
+
+    // =====================================================
+    // DETENER SERVIDOR
+    // =====================================================
 
     public void detener() {
         if (servidor != null) {
