@@ -92,3 +92,10 @@ data/                       archivos de persistencia
 docs/                       guías, horas, pruebas y planificación
 scripts/                    comandos para compilar, ejecutar y verificar
 ```
+
+
+
+
+## Entrevistas tercera entrega
+
+https://youtu.be/9yRYS6GIyck?si=1H5ffpH4WgA-2pg7
