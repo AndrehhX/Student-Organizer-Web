@@ -15,9 +15,9 @@ No hace falta escribir un ensayo. Con una fila por actividad es suficiente.
 | Manuel | RF12 Promedio | | | | | | |
 | Manuel | RF12 Promedio | | | | | | |
 | Manuel | RF12 Promedio | | | | | | |
-| Luis | RF07 Tareas | | | | | | |
-| Luis | RF07 Tareas | | | | | | |
-| Luis | RF07 Tareas | | | | | | |
+| Luis | RF07 Tareas |8 de octubre|creacion de tareas, controlador y persistencia |13 00 |22:00 |9 30H |commit en branch rf07 |
+| Luis | RF07 Tareas |9, 10 y 11 de octubre |terminar tareas y empezar la base de datos|15 00 |1: 00 |10 H |merge de tareas y commits de esquema sql |
+| Luis | RF07 Tareas |14 |agregar tablas y punto central para el sql |16:00 |23:00 |7H |merges de sql, repositorios y punto central de repositorios |
 
 ## Ejemplo de actividad
 
