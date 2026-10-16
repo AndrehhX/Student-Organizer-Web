@@ -8,7 +8,8 @@ import modulos.calificaciones.ControladorCalificaciones;
 import modulos.calificaciones.RepositorioCalificacionesMemoria;
 import modulos.tareas.Tarea;
 import modulos.tareas.controladorTareas;
-
+import java.util.Locale;
+import java.util.UUID;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -51,11 +52,15 @@ public class ServidorWeb {
     // INICIAR SERVIDOR WEB
     // =====================================================
 
+
     public void iniciar() throws IOException {
         servidor = HttpServer.create(new InetSocketAddress(puerto), 0);
 
+        // LOGIN
         servidor.createContext("/api/login", this::manejarLogin);
         servidor.createContext("/api/logout", this::manejarLogout);
+
+        // TAREAS
         servidor.createContext("/api/tareas/completar", this::completarTarea);
         servidor.createContext("/api/tareas", this::manejarTareas);
 
@@ -65,10 +70,83 @@ public class ServidorWeb {
             this::manejarCalificaciones
         );
 
+        // RF03 - Cursos generados desde Calificaciones
+        servidor.createContext(
+            "/api/cursos",
+            this::manejarCursos
+        );
         servidor.createContext("/", this::servirArchivo);
 
         servidor.start();
     }
+
+
+    // =====================================================
+    // RF03 - CONSULTAR CURSOS DESDE CALIFICACIONES
+    // =====================================================
+
+    private void manejarCursos(HttpExchange intercambio)
+            throws IOException {
+
+        if (!"GET".equalsIgnoreCase(
+                intercambio.getRequestMethod())) {
+
+            responder(intercambio, 405,
+                "{\"mensaje\":\"Método no permitido.\"}");
+            return;
+        }
+
+        Usuario usuario = controladorLogin.getUsuarioActual();
+
+        if (usuario == null) {
+            responder(intercambio, 401,
+                "{\"mensaje\":\"Debes iniciar sesión.\"}");
+            return;
+        }
+
+        String idUsuario = usuario.getCarne();
+
+        List<Calificacion> calificaciones =
+            controladorCalificaciones.listarCalificaciones(
+                idUsuario
+            );
+
+        // Evitar cursos duplicados
+        Map<String, String> cursos =
+            new java.util.LinkedHashMap<>();
+
+        for (Calificacion calificacion : calificaciones) {
+            cursos.putIfAbsent(
+                calificacion.getIdCurso(),
+                calificacion.getNombreCurso()
+            );
+        }
+
+        StringBuilder json = new StringBuilder("[");
+
+        boolean primero = true;
+
+        for (Map.Entry<String, String> curso : cursos.entrySet()) {
+
+            if (!primero) {
+                json.append(",");
+            }
+
+            json.append("{")
+                .append("\"idCurso\":\"")
+                .append(escaparJson(curso.getKey()))
+                .append("\",\"nombreCurso\":\"")
+                .append(escaparJson(curso.getValue()))
+                .append("\"}");
+
+            primero = false;
+        }
+
+        json.append("]");
+
+        responder(intercambio, 200, json.toString());
+    }
+
 
     // =====================================================
     // RF03 - REGISTRAR Y CONSULTAR CALIFICACIONES
@@ -135,20 +213,29 @@ public class ServidorWeb {
             Map<String, String> datos =
                 leerFormulario(leerCuerpo(intercambio));
 
-            String idCurso = datos.get("idCurso");
             String nombreCurso = datos.get("nombreCurso");
             String nombreActividad = datos.get("nombreActividad");
 
-            if (idCurso == null || nombreCurso == null
-                    || nombreActividad == null
+            if (nombreCurso == null || nombreActividad == null
                     || datos.get("notaObtenida") == null
                     || datos.get("notaMaxima") == null
                     || datos.get("fecha") == null) {
-
                 responder(intercambio, 400,
                     "{\"exitoso\":false,\"mensaje\":\"Faltan datos de la calificación.\"}");
                 return;
             }
+
+            // Normalizar el nombre del curso
+            nombreCurso = nombreCurso.trim().replaceAll("\\s+", " ");
+
+            // Generar un identificador estable por usuario y curso
+            String claveCurso = idUsuario + "\u0000"
+                    + nombreCurso.toLowerCase(Locale.ROOT);
+
+            String idCurso = UUID.nameUUIDFromBytes(
+                claveCurso.getBytes(StandardCharsets.UTF_8)
+            ).toString();
+
 
             BigDecimal notaObtenida =
                 new BigDecimal(datos.get("notaObtenida"));

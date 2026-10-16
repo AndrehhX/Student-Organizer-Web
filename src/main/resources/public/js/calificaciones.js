@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // INICIALIZACION
     // =====================================================
 
-    cargarCursos();
     cargarCalificaciones();
 
     // =====================================================
@@ -41,9 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         evento.preventDefault();
         ocultarMensaje();
 
-        const idCurso = selectCurso.value.trim();
-        const nombreCurso =
-            selectCurso.selectedOptions[0]?.textContent.trim() || '';
+    const nombreCurso = selectCurso.value.trim();
 
         const nombreActividad = inputActividad.value.trim();
         const notaObtenidaTexto = inputObtenida.value.trim();
@@ -52,13 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // VALIDACIONES
 
-        if (!idCurso) {
-            mostrarMensaje('Selecciona un curso.', 'error');
-            return;
-        }
-
-        if (!nombreCurso) {
-            mostrarMensaje('El curso seleccionado no es válido.', 'error');
+        if (!nombreCurso || nombreCurso.length > 150) {
+            mostrarMensaje(
+                'Ingresa un nombre de curso válido (máximo 150 caracteres).',
+                'error'
+            );
             return;
         }
 
@@ -107,7 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // DATOS PARA SERVIDORWEB.JAVA
 
         const nuevaCalificacion = new URLSearchParams({
-            idCurso,
             nombreCurso,
             nombreActividad,
             notaObtenida: notaObtenidaTexto,
@@ -217,66 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.lucide) {
                 window.lucide.createIcons();
             }
-        }
-    }
-
-    // =====================================================
-    // CARGAR CURSOS
-    // =====================================================
-
-    async function cargarCursos() {
-
-        selectCurso.disabled = true;
-        selectCurso.innerHTML =
-            '<option value="">Cargando cursos...</option>';
-
-        try {
-            const respuesta = await fetch('/api/cursos', {
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-
-            if (!respuesta.ok) {
-                throw new Error('API de cursos no disponible.');
-            }
-
-            const cursos = await respuesta.json();
-
-            if (!Array.isArray(cursos)) {
-                throw new Error('Formato de cursos incorrecto.');
-            }
-
-            selectCurso.innerHTML =
-                '<option value="">-- Selecciona un curso --</option>';
-
-            cursos.forEach(curso => {
-
-                const id = curso.idCurso ?? curso.id;
-                const nombre = curso.nombreCurso ?? curso.nombre;
-
-                if (id == null || !nombre) return;
-
-                const opcion = document.createElement('option');
-
-                opcion.value = String(id);
-                opcion.textContent = String(nombre);
-
-                selectCurso.appendChild(opcion);
-            });
-
-            if (selectCurso.options.length > 1) {
-                selectCurso.disabled = false;
-            } else {
-                selectCurso.innerHTML =
-                    '<option value="">No hay cursos disponibles</option>';
-            }
-
-        } catch (error) {
-            console.warn('No se pudieron cargar los cursos:', error);
-
-            selectCurso.innerHTML =
-                '<option value="">Cursos no disponibles todavía</option>';
         }
     }
 

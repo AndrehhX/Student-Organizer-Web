@@ -9,10 +9,11 @@ No hace falta escribir un ensayo. Con una fila por actividad es suficiente.
 | Andreh    | RF01 Login| 2,11,12 de octubre| | Login y correciones | 13:00H         |15:00h       | 12H            | Commits en main y brenchs
 | Andreh | RF01 Login | | | | | | |
 | Andreh | RF01 Login | | | | | | |
+| Fabricio | RF03 Calificaciones |7, 9, 13,15 de octubre  |Calificaciones y correciones  | 16:00H | 22:00 H | 15H |Commits en branch Fabricio |
+
 | Fabricio | RF03 Calificaciones | | | | | | |
 | Fabricio | RF03 Calificaciones | | | | | | |
-| Fabricio | RF03 Calificaciones | | | | | | |
-| Manuel | RF12 Promedio | | | | | | |
+| Manuel | RF12 Promedio |8, 10, 11, 14 de octubre |Promedio listo para calificaiones | 13:00 | 16:00  |8H |Commits branch-Manuel |
 | Manuel | RF12 Promedio | | | | | | |
 | Manuel | RF12 Promedio | | | | | | |
 | Luis | RF07 Tareas | | | | | | |
@@ -23,3 +24,5 @@ No hace falta escribir un ensayo. Con una fila por actividad es suficiente.
 
 `Andreh | RF01 | 25/09 | Ajusté la pantalla del Login y probé campos vacíos | 18:00 | 19:00 | 1 | commit de interfaz`
 
+°Fabricio | RF03 | 11/10 | Revisa como ba quedando con el index HTML | 16:00 | 20:00 | 2 | commit de index °
+°Fabricio | RF03 | 11/10 | Revisa compatibilidad con promedio y cursos | 16:00 | 20:00 | 2 | commit branch Fabricio °
