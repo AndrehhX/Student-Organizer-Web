@@ -105,3 +105,10 @@ sql/                        esquema y scripts de base de datos
 docs/                       guías, horas, pruebas y planificación
 scripts/                    comandos para compilar, ejecutar y verificar
 ```
+
+
+
+
+## Entrevistas tercera entrega
+
+https://youtu.be/9yRYS6GIyck?si=1H5ffpH4WgA-2pg7
