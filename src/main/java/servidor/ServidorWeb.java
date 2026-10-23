@@ -11,6 +11,7 @@ import modulos.promedio.ControladorPromedios;
 import modulos.promedio.ResultadoPromedio;
 import modulos.tareas.Tarea;
 import modulos.tareas.controladorTareas;
+import persistencia.ServiciosMySQL;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,23 +32,41 @@ public class ServidorWeb {
     private final Path carpetaPublica;
     private final int puerto;
     private final controladorTareas controladorTareas;
+    private final ServiciosMySQL serviciosMySQL;
     private final ControladorCalificaciones controladorCalificaciones;
     private final ControladorPromedios controladorPromedios;
     private HttpServer servidor;
 
     public ServidorWeb(ControladorLogin controladorLogin, Path carpetaPublica, int puerto) {
-        this(controladorLogin, carpetaPublica, puerto, new controladorTareas());
+        this(controladorLogin, carpetaPublica, puerto,
+                new controladorTareas(), null);
     }
 
     public ServidorWeb(ControladorLogin controladorLogin, Path carpetaPublica,
                        int puerto, controladorTareas controladorTareas) {
+        this(controladorLogin, carpetaPublica, puerto,
+                controladorTareas, null);
+    }
+
+    public ServidorWeb(ControladorLogin controladorLogin, Path carpetaPublica,
+                       int puerto, ServiciosMySQL serviciosMySQL) {
+        this(controladorLogin, carpetaPublica, puerto,
+                new controladorTareas(), serviciosMySQL);
+    }
+
+    public ServidorWeb(ControladorLogin controladorLogin, Path carpetaPublica,
+                       int puerto, controladorTareas controladorTareas,
+                       ServiciosMySQL serviciosMySQL) {
         this.controladorLogin = controladorLogin;
         this.carpetaPublica = carpetaPublica.toAbsolutePath().normalize();
         this.puerto = puerto;
         this.controladorTareas = controladorTareas;
+        this.serviciosMySQL = serviciosMySQL;
         // RF03 y RF12 comparten el mismo repositorio de calificaciones.
         RepositorioCalificaciones repositorioCalificaciones =
-            new RepositorioCalificacionesMemoria();
+            serviciosMySQL == null
+                ? new RepositorioCalificacionesMemoria()
+                : obtenerRepositorioCalificaciones(serviciosMySQL);
 
         this.controladorCalificaciones =
         new ControladorCalificaciones(
@@ -56,6 +75,11 @@ public class ServidorWeb {
 
         this.controladorPromedios =
             new ControladorPromedios(repositorioCalificaciones);
+    }
+
+    private RepositorioCalificaciones obtenerRepositorioCalificaciones(
+            ServiciosMySQL servicios) {
+        return servicios.getRepositorioCalificaciones();
     }
 
 
@@ -70,6 +94,7 @@ public class ServidorWeb {
         servidor.createContext("/api/logout", this::manejarLogout);
         servidor.createContext("/api/tareas/completar", this::completarTarea);
         servidor.createContext("/api/tareas", this::manejarTareas);
+        servidor.createContext("/api/cursos", this::manejarCursos);
 
         // RF03 - Calificaciones
         servidor.createContext(
@@ -114,7 +139,15 @@ public class ServidorWeb {
             return;
         }
 
-        String idUsuario = usuario.getCarne();
+        String idUsuario;
+        try {
+            idUsuario = obtenerIdUsuarioParaDatos(usuario);
+        } catch (IllegalStateException error) {
+            responder(intercambio, 409,
+                "{\"mensaje\":\""
+                    + escaparJson(error.getMessage()) + "\"}");
+            return;
+        }
 
         // =================================================
         // CONSULTAR CALIFICACIONES
@@ -272,7 +305,7 @@ public class ServidorWeb {
         }
 
         try {
-            String idUsuario = usuario.getCarne();
+            String idUsuario = obtenerIdUsuarioParaDatos(usuario);
 
             Optional<BigDecimal> general =
                 controladorPromedios.obtenerPromedioGeneral(idUsuario);
@@ -375,7 +408,107 @@ public class ServidorWeb {
                 "{\"exitoso\":true,\"mensaje\":\"SesiÃ³n cerrada.\"}");
     }
 
+    private void manejarCursos(HttpExchange intercambio) throws IOException {
+        if (!"GET".equalsIgnoreCase(intercambio.getRequestMethod())
+                && !"POST".equalsIgnoreCase(intercambio.getRequestMethod())) {
+            responder(intercambio, 405,
+                    "{\"mensaje\":\"MÃ©todo no permitido.\"}");
+            return;
+        }
+
+        Usuario usuario = controladorLogin.getUsuarioActual();
+        if (usuario == null) {
+            responder(intercambio, 401,
+                    "{\"mensaje\":\"Debes iniciar sesiÃ³n.\"}");
+            return;
+        }
+
+        if (serviciosMySQL == null) {
+            responder(intercambio, 503,
+                    "{\"mensaje\":\"MySQL no estÃ¡ configurado.\"}");
+            return;
+        }
+
+        try {
+            long idUsuario = Long.parseLong(
+                    obtenerIdUsuarioParaDatos(usuario));
+
+            if ("GET".equalsIgnoreCase(intercambio.getRequestMethod())) {
+                responder(intercambio, 200,
+                        convertirCursosAJson(
+                                serviciosMySQL.getCursos()
+                                        .listarPorUsuario(idUsuario)));
+                return;
+            }
+
+            Map<String, String> datos =
+                    leerFormulario(leerCuerpo(intercambio));
+            String nombre = datos.get("nombre");
+
+            if (nombre == null || nombre.trim().isEmpty()) {
+                responder(intercambio, 400,
+                        "{\"mensaje\":\"El nombre del curso es obligatorio.\"}");
+                return;
+            }
+
+            modulos.Cursos.Curso curso = serviciosMySQL.getCursos()
+                    .guardar(idUsuario, nombre);
+            responder(intercambio, 201,
+                    "{\"exitoso\":true,\"idCurso\":"
+                            + curso.getIdCurso() + "}");
+
+        } catch (NumberFormatException error) {
+            responder(intercambio, 409,
+                    "{\"mensaje\":\"El usuario no tiene un ID vÃ¡lido en MySQL.\"}");
+        } catch (IllegalArgumentException error) {
+            responder(intercambio, 400,
+                    "{\"mensaje\":\""
+                            + escaparJson(error.getMessage()) + "\"}");
+        } catch (IllegalStateException error) {
+            responder(intercambio, 500,
+                    "{\"mensaje\":\"No se pudieron consultar los cursos.\"}");
+        }
+    }
+
+    private String convertirCursosAJson(List<modulos.Cursos.Curso> cursos) {
+        StringBuilder json = new StringBuilder("[");
+
+        for (int i = 0; i < cursos.size(); i++) {
+            if (i > 0) {
+                json.append(',');
+            }
+
+            modulos.Cursos.Curso curso = cursos.get(i);
+            json.append("{\"idCurso\":")
+                    .append(curso.getIdCurso())
+                    .append(",\"usuarioId\":")
+                    .append(curso.getUsuarioId())
+                    .append(",\"nombreCurso\":\"")
+                    .append(escaparJson(curso.getNombreCurso()))
+                    .append("\"}");
+        }
+
+        return json.append(']').toString();
+    }
+
+    private String obtenerIdUsuarioParaDatos(Usuario usuario) {
+        if (serviciosMySQL == null) {
+            return usuario.getCarne();
+        }
+
+        return serviciosMySQL.getUsuarios()
+                .buscarId(usuario.getNombreUsuario())
+                .map(String::valueOf)
+                .orElseThrow(() -> new IllegalStateException(
+                        "El usuario autenticado no existe en MySQL."));
+    }
+
     private void manejarTareas(HttpExchange intercambio) throws IOException {
+        if (serviciosMySQL != null) {
+            manejarTareasMySQL(intercambio);
+            return;
+        }
+
         if ("GET".equalsIgnoreCase(intercambio.getRequestMethod())) {
             responder(intercambio, 200, convertirTareasAJson());
             return;
@@ -404,6 +537,11 @@ public class ServidorWeb {
     }
 
     private void completarTarea(HttpExchange intercambio) throws IOException {
+        if (serviciosMySQL != null) {
+            completarTareaMySQL(intercambio);
+            return;
+        }
+
         if (!"POST".equalsIgnoreCase(intercambio.getRequestMethod())) {
             responder(intercambio, 405,
                     "{\"mensaje\":\"Método no permitido.\"}");
@@ -428,9 +566,119 @@ public class ServidorWeb {
         }
     }
 
+    private void manejarTareasMySQL(HttpExchange intercambio)
+            throws IOException {
+        if (!"GET".equalsIgnoreCase(intercambio.getRequestMethod())
+                && !"POST".equalsIgnoreCase(intercambio.getRequestMethod())) {
+            responder(intercambio, 405,
+                    "{\"mensaje\":\"MÃ©todo no permitido.\"}");
+            return;
+        }
+
+        Usuario usuario = controladorLogin.getUsuarioActual();
+        if (usuario == null) {
+            responder(intercambio, 401,
+                    "{\"mensaje\":\"Debes iniciar sesiÃ³n.\"}");
+            return;
+        }
+
+        try {
+            long idUsuario = Long.parseLong(
+                    obtenerIdUsuarioParaDatos(usuario));
+
+            if ("GET".equalsIgnoreCase(intercambio.getRequestMethod())) {
+                responder(intercambio, 200,
+                        convertirTareasAJson(
+                                serviciosMySQL.getTareas()
+                                        .listarTareas(idUsuario)));
+                return;
+            }
+
+            Map<String, String> datos =
+                    leerFormulario(leerCuerpo(intercambio));
+            String nombre = datos.get("nombre");
+            String fecha = datos.get("fechaEntrega");
+            String curso = datos.get("cursoId");
+
+            if (nombre == null || fecha == null || curso == null
+                    || nombre.trim().isEmpty()
+                    || fecha.trim().isEmpty() || curso.trim().isEmpty()) {
+                responder(intercambio, 400,
+                        "{\"exitoso\":false,\"mensaje\":\"Nombre, fecha y curso son obligatorios.\"}");
+                return;
+            }
+
+            Tarea tarea = serviciosMySQL.getTareas().registrarTarea(
+                    idUsuario,
+                    Long.parseLong(curso),
+                    nombre,
+                    fecha
+            );
+
+            responder(intercambio, 201,
+                    "{\"exitoso\":true,\"id\":"
+                            + tarea.getId() + "}");
+
+        } catch (NumberFormatException error) {
+            responder(intercambio, 400,
+                    "{\"exitoso\":false,\"mensaje\":\"Los identificadores deben ser numÃ©ricos.\"}");
+        } catch (IllegalArgumentException error) {
+            responder(intercambio, 400,
+                    "{\"exitoso\":false,\"mensaje\":\""
+                            + escaparJson(error.getMessage()) + "\"}");
+        } catch (IllegalStateException error) {
+            responder(intercambio, 500,
+                    "{\"exitoso\":false,\"mensaje\":\"No se pudieron consultar las tareas.\"}");
+        }
+    }
+
+    private void completarTareaMySQL(HttpExchange intercambio)
+            throws IOException {
+        if (!"POST".equalsIgnoreCase(intercambio.getRequestMethod())) {
+            responder(intercambio, 405,
+                    "{\"mensaje\":\"MÃ©todo no permitido.\"}");
+            return;
+        }
+
+        Usuario usuario = controladorLogin.getUsuarioActual();
+        if (usuario == null) {
+            responder(intercambio, 401,
+                    "{\"mensaje\":\"Debes iniciar sesiÃ³n.\"}");
+            return;
+        }
+
+        try {
+            long idUsuario = Long.parseLong(
+                    obtenerIdUsuarioParaDatos(usuario));
+            Map<String, String> datos =
+                    leerFormulario(leerCuerpo(intercambio));
+            long idTarea = Long.parseLong(datos.get("indice"));
+            boolean completada = serviciosMySQL.getTareas()
+                    .marcarCompletada(idUsuario, idTarea);
+
+            if (!completada) {
+                responder(intercambio, 404,
+                        "{\"exitoso\":false,\"mensaje\":\"La tarea no existe o ya estÃ¡ completada.\"}");
+                return;
+            }
+
+            responder(intercambio, 200,
+                    "{\"exitoso\":true,\"mensaje\":\"Tarea completada.\"}");
+        } catch (NumberFormatException error) {
+            responder(intercambio, 400,
+                    "{\"exitoso\":false,\"mensaje\":\"El ID de la tarea no es vÃ¡lido.\"}");
+        } catch (IllegalStateException error) {
+            responder(intercambio, 500,
+                    "{\"exitoso\":false,\"mensaje\":\"No se pudo completar la tarea.\"}");
+        }
+    }
+
     private String convertirTareasAJson() {
+        return convertirTareasAJson(controladorTareas.getListaTareas());
+    }
+
+    private String convertirTareasAJson(List<Tarea> tareas) {
         StringBuilder json = new StringBuilder("[");
-        List<Tarea> tareas = controladorTareas.getListaTareas();
 
         for (int indice = 0; indice < tareas.size(); indice++) {
             if (indice > 0) {
@@ -439,12 +687,15 @@ public class ServidorWeb {
 
             Tarea tarea = tareas.get(indice);
             json.append("{\"indice\":").append(indice)
+                    .append(",\"id\":").append(tarea.getId())
                     .append(",\"nombre\":\"")
                     .append(escaparJson(tarea.getNombre()))
                     .append("\",\"fechaEntrega\":\"")
                     .append(escaparJson(tarea.getfechaEntrega()))
                     .append("\",\"prioridad\":\"")
-                    .append(escaparJson(tarea.getPrioridad()))
+                    .append(escaparJson(tarea.getPrioridad() == null
+                            ? ""
+                            : tarea.getPrioridad()))
                     .append("\",\"completada\":")
                     .append(tarea.isCompletada())
                     .append('}');

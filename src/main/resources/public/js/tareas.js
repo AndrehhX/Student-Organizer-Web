@@ -1,6 +1,7 @@
 const formularioTarea = document.querySelector('#form-tarea');
 const listaTareas = document.querySelector('#lista-tareas');
 const mensajeTareas = document.querySelector('#mensaje-tareas');
+const selectorCursoTarea = document.querySelector('#curso-tarea');
 
 function mostrarMensajeTareas(texto, error = false) {
     mensajeTareas.textContent = texto;
@@ -41,7 +42,8 @@ function mostrarTareas(tareas) {
         accion.className = tarea.completada
             ? 'rounded-lg bg-gray-400 px-3 py-2 text-sm font-semibold text-white'
             : 'rounded-lg bg-brand-medium px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark';
-        accion.addEventListener('click', () => completarTarea(tarea.indice));
+        accion.addEventListener('click', () =>
+            completarTarea(tarea.id || tarea.indice));
 
         tarjeta.append(informacion, accion);
         listaTareas.append(tarjeta);
@@ -81,6 +83,37 @@ async function completarTarea(indice) {
     }
 }
 
+async function cargarCursosParaTareas() {
+    if (!selectorCursoTarea) return;
+
+    try {
+        const respuesta = await fetch('/api/cursos', {
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (!respuesta.ok) {
+            return;
+        }
+
+        const cursos = await respuesta.json();
+        selectorCursoTarea.innerHTML =
+            '<option value="">Selecciona un curso</option>';
+
+        cursos.forEach((curso) => {
+            const id = curso.idCurso ?? curso.id;
+            const nombre = curso.nombreCurso ?? curso.nombre;
+            if (id == null || !nombre) return;
+
+            const opcion = document.createElement('option');
+            opcion.value = String(id);
+            opcion.textContent = String(nombre);
+            selectorCursoTarea.append(opcion);
+        });
+    } catch (error) {
+        console.warn('No se pudieron cargar los cursos para tareas:', error);
+    }
+}
+
 formularioTarea.addEventListener('submit', async (evento) => {
     evento.preventDefault();
     const datos = new FormData(formularioTarea);
@@ -106,3 +139,4 @@ formularioTarea.addEventListener('submit', async (evento) => {
 });
 
 cargarTareas();
+cargarCursosParaTareas();

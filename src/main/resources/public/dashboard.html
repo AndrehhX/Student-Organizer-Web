@@ -125,6 +125,12 @@
                                    placeholder="Nombre de la tarea" required
                                    class="rounded-lg border border-brand-medium/30 px-3 py-2">
 
+                            <label class="sr-only" for="curso-tarea">Curso de la tarea</label>
+                            <select id="curso-tarea" name="cursoId"
+                                    class="rounded-lg border border-brand-medium/30 px-3 py-2">
+                                <option value="">Curso opcional en modo local</option>
+                            </select>
+
                             <label class="sr-only" for="fecha-tarea">Fecha de entrega</label>
                             <input id="fecha-tarea" name="fechaEntrega" type="date"
                                    required class="rounded-lg border border-brand-medium/30 px-3 py-2">
@@ -326,11 +332,20 @@
                 </div>
             </section>
 
-            <!-- PANEL CURSOS (Opcional/Placeholder) -->
+            <!-- PANEL CURSOS -->
             <section id="panel-cursos" class="panel-dashboard-card panel-seccion-extra hidden">
-                <div class="panel-vacio rounded-2xl border-2 border-dashed border-brand-medium/40 bg-brand-bright/30 p-8 text-center">
-                    <p class="text-lg font-semibold text-brand-dark">Sección lista para conectar</p>
-                    <p class="mt-2 text-sm text-gray-600">Aquí se podrán mostrar los cursos del estudiante cuando se termine de conectar esa información.</p>
+                <div class="panel-vacio rounded-2xl border-2 border-dashed border-brand-medium/40 bg-brand-bright/30 p-8">
+                    <h2 class="text-lg font-semibold text-brand-dark text-center mb-4">
+                        Mis Cursos
+                    </h2>
+                    <p class="text-sm text-gray-600 text-center mb-5">
+                        Cursos disponibles para registrar tareas y calificaciones.
+                    </p>
+                    <div id="lista-cursos" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <p class="text-sm text-gray-500 text-center sm:col-span-2">
+                            Cargando cursos...
+                        </p>
+                    </div>
                 </div>
             </section>
 
@@ -353,6 +368,7 @@
     <script src="/js/tareas.js"></script>
     <script src="/js/dashboard.js"></script>
     <script src="/js/calificaciones.js"></script>
-        <script src="/js/promedios.js"></script>
+    <script src="/js/promedios.js"></script>
+    <script src="/js/cursos.js"></script>
 </body>
 </html>

@@ -23,6 +23,7 @@ public final class ServiciosMySQL {
     private final RepositorioUsuariosMySQL usuarios;
     private final RepositorioCursosMySQL cursos;
     private final ControladorTareasMySQL tareas;
+    private final RepositorioCalificacionesMySQL repositorioCalificaciones;
     private final ControladorCalificaciones calificaciones;
     private final ControladorPromedios promedios;
 
@@ -41,14 +42,14 @@ public final class ServiciosMySQL {
         cursos = new RepositorioCursosMySQL(bd);
         tareas = new ControladorTareasMySQL(bd);
 
-        RepositorioCalificacionesMySQL repositorioNotas =
+        repositorioCalificaciones =
                 new RepositorioCalificacionesMySQL(bd);
 
         calificaciones =
-                new ControladorCalificaciones(repositorioNotas);
+                new ControladorCalificaciones(repositorioCalificaciones);
 
         promedios =
-                new ControladorPromedios(repositorioNotas);
+                new ControladorPromedios(repositorioCalificaciones);
     }
 
     /**
@@ -98,6 +99,10 @@ public final class ServiciosMySQL {
 
     public ControladorCalificaciones getCalificaciones() {
         return calificaciones;
+    }
+
+    public RepositorioCalificacionesMySQL getRepositorioCalificaciones() {
+        return repositorioCalificaciones;
     }
 
     public ControladorPromedios getPromedios() {
