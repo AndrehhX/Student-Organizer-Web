@@ -1,40 +1,34 @@
 package controlador;
 
 import modelo.Usuario;
-import persistencia.PersistenciaDatos;
+import persistencia.RepositorioUsuariosMySQL;
 
-import java.util.List;
+import java.util.Optional;
 
 public class ControladorLogin {
-    private final PersistenciaDatos persistenciaDatos;
+    private final RepositorioUsuariosMySQL usuarios;
     private Usuario usuarioActual;
 
-    public ControladorLogin() {
-        this(new PersistenciaDatos());
-    }
-
-    public ControladorLogin(PersistenciaDatos persistenciaDatos) {
-        this.persistenciaDatos = persistenciaDatos;
-        prepararCuentaDemostracion();
+    public ControladorLogin(RepositorioUsuariosMySQL usuarios) {
+        if (usuarios == null) {
+            throw new IllegalArgumentException(
+                    "El repositorio de usuarios es obligatorio."
+            );
+        }
+        this.usuarios = usuarios;
     }
 
     public boolean iniciarSesion(String usuario, String contrasena) {
-        if (usuario == null || usuario.trim().isEmpty()
-                || contrasena == null || contrasena.isEmpty()) {
-            usuarioActual = null;
+        usuarioActual = null;
+
+        Optional<Long> id = usuarios.autenticar(usuario, contrasena);
+
+        if (id.isEmpty()) {
             return false;
         }
 
-        List<Usuario> usuarios = persistenciaDatos.leerUsuarios();
-        for (Usuario usuarioGuardado : usuarios) {
-            if (usuarioGuardado.autenticar(usuario, contrasena)) {
-                usuarioActual = usuarioGuardado;
-                return true;
-            }
-        }
-
-        usuarioActual = null;
-        return false;
+        usuarioActual = usuarios.buscarPorId(id.get()).orElse(null);
+        return usuarioActual != null;
     }
 
     public void cerrarSesion() {
@@ -43,11 +37,5 @@ public class ControladorLogin {
 
     public Usuario getUsuarioActual() {
         return usuarioActual;
-    }
-
-    private void prepararCuentaDemostracion() {
-        if (persistenciaDatos.leerUsuarios().isEmpty()) {
-            persistenciaDatos.guardarUsuario(new Usuario("demo", "demo123", "0000"));
-        }
     }
 }

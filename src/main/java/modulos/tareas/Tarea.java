@@ -8,9 +8,8 @@ public class Tarea {
     private String nombre;
     private String fechaEntrega;
     private boolean completada;
-
-    // Compatibilidad temporal con el controlador y el CSV anteriores.
-    private String prioridad;
+      // se volvio a agregar prioridad de manera permanente, ahora tambien se registra en MySQL
+    private String prioridad = "media";
 
     /**
      * Construye una tarea nueva asociada a un curso.
@@ -113,15 +112,27 @@ public class Tarea {
         this.completada = true;
     }
 
-    @Deprecated
+    
     public String getPrioridad() {
         return prioridad;
     }
 
-    @Deprecated
+    
     public void setPrioridad(String prioridad) {
-        this.prioridad = validarTexto(prioridad, "Prioridad");
+        String valor = validarTexto(prioridad, "Prioridad").toLowerCase(java.util.Locale.ROOT);
+
+
+        if (!valor.equals("alta") && !valor.equals("media") && !valor.equals("baja")) {
+            throw new IllegalArgumentException("La prioridad debe ser alta, media o baja");
+        }
+
+        this.prioridad = valor;
     }
+
+//Agregue el coso de prioridad otravez, ahora si nitido
+
+
+
 
     @Override
     public String toString() {
