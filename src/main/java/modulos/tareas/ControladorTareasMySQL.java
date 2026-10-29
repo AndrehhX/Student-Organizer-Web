@@ -38,29 +38,24 @@ public class ControladorTareasMySQL {
      * El objeto devuelto contiene el ID generado por MySQL.
      */
     public Tarea registrarTarea(
-            long usuarioId,
-            long cursoId,
-            String nombre,
-            String fechaEntrega
-    ) {
-        // Comprueba que el curso existe para este usuario.
-        // La clave foránea también protege esta relación en MySQL.
-        if (!cursos.buscarPorId(usuarioId, cursoId).isPresent()) {
-            throw new IllegalArgumentException(
-                    "El curso no existe o no pertenece al usuario."
-            );
-        }
+        long usuarioId,
+        long cursoId,
+        String nombre,
+        String fechaEntrega,
+        String prioridad
+) {
+    Tarea tarea = new Tarea(nombre, fechaEntrega, cursoId);
+    tarea.setPrioridad(prioridad);
 
-        Tarea tarea = new Tarea(
-                nombre,
-                fechaEntrega,
-                cursoId
+    if (cursos.buscarPorId(usuarioId, cursoId).isEmpty()) {
+        throw new IllegalArgumentException(
+                "El curso no existe o no pertenece al usuario."
         );
-
-        tareas.guardarTarea(usuarioId, tarea);
-
-        return tarea;
     }
+
+    tareas.guardarTarea(usuarioId, tarea);
+    return tarea;
+}
 
     /**
      * Recupera todas las tareas del usuario desde MySQL.

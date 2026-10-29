@@ -6,28 +6,22 @@ import java.nio.file.Paths;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        ControladorLogin controladorLogin = new ControladorLogin();
-        ServiciosMySQL serviciosMySQL = null;
-        String claveBase = System.getenv("DB_PASSWORD");
+        ServiciosMySQL servicios = ServiciosMySQL.desdeEntorno();
 
-        if (claveBase != null && !claveBase.isBlank()) {
-            serviciosMySQL = ServiciosMySQL.desdeEntorno();
-        }
+        ControladorLogin login = new ControladorLogin(
+                servicios.getUsuarios()
+        );
 
-        ServidorWeb servidor = serviciosMySQL == null
-                ? new ServidorWeb(
-                        controladorLogin,
-                        Paths.get("src", "main", "resources", "public"),
-                        8080
-                )
-                : new ServidorWeb(
-                        controladorLogin,
-                        Paths.get("src", "main", "resources", "public"),
-                        8080,
-                        serviciosMySQL
-                );
+        ServidorWeb servidor = new ServidorWeb(
+                login,
+                Paths.get("src", "main", "resources", "public"),
+                8080,
+                servicios
+        );
 
         servidor.iniciar();
-        System.out.println("Student Organizer está disponible en http://localhost:8080");
+        System.out.println(
+                "Student Organizer está disponible en http://localhost:8080"
+        );
     }
 }

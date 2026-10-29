@@ -56,6 +56,8 @@ CREATE TABLE IF NOT EXISTS tareas (
     nombre VARCHAR(150) NOT NULL,
     fecha_entrega DATE NOT NULL,
     completada BOOLEAN NOT NULL DEFAULT FALSE,
+    prioridad VARCHAR(30) NOT NULL DEFAULT "media",
+    AFTER fecha_entrega;
 
     INDEX idx_tareas_curso_usuario (curso_id, usuario_id),
 

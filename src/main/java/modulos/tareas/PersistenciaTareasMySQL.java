@@ -74,11 +74,11 @@ public class PersistenciaTareasMySQL {
             );
         }
 
-        // Prioridad ya no participa en el guardado.
+        
         String sql =
                 "INSERT INTO tareas "
                 + "(usuario_id, curso_id, nombre, "
-                + "fecha_entrega, completada) "
+                + "fecha_entrega, completada, prioridad) "
                 + "VALUES (?, ?, ?, ?, ?)";
 
         try (
@@ -93,6 +93,7 @@ public class PersistenciaTareasMySQL {
             consulta.setString(3, nombre);
             consulta.setDate(4, Date.valueOf(fecha));
             consulta.setBoolean(5, tarea.isCompletada());
+            consulta.setString(6, tarea.getPrioridad());
 
             consulta.executeUpdate();
 
@@ -127,6 +128,7 @@ public class PersistenciaTareasMySQL {
                 "SELECT id, curso_id, nombre, fecha_entrega, completada "
                 + "FROM tareas "
                 + "WHERE usuario_id = ? "
+                + "ORDER BY completada, fecha_entrega, id"
                 + "ORDER BY completada, fecha_entrega, id";
 
         List<Tarea> tareas = new ArrayList<>();
@@ -148,6 +150,7 @@ public class PersistenciaTareasMySQL {
                     );
 
                     tarea.setId(resultado.getLong("id"));
+                    tarea.setPrioridad(resultado.getString("prioridad"));
 
                     // getLong devuelve 0 para SQL NULL.
                     // wasNull permite conservar la ausencia del curso.

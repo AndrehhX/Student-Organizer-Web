@@ -5,12 +5,9 @@ import com.sun.net.httpserver.HttpServer;
 import controlador.ControladorLogin;
 import modulos.calificaciones.Calificacion;
 import modulos.calificaciones.ControladorCalificaciones;
-import modulos.calificaciones.RepositorioCalificaciones;
-import modulos.calificaciones.RepositorioCalificacionesMemoria;
 import modulos.promedio.ControladorPromedios;
 import modulos.promedio.ResultadoPromedio;
 import modulos.tareas.Tarea;
-import modulos.tareas.controladorTareas;
 import persistencia.ServiciosMySQL;
 
 import java.io.IOException;
@@ -31,58 +28,31 @@ public class ServidorWeb {
     private final ControladorLogin controladorLogin;
     private final Path carpetaPublica;
     private final int puerto;
-    private final controladorTareas controladorTareas;
     private final ServiciosMySQL serviciosMySQL;
     private final ControladorCalificaciones controladorCalificaciones;
     private final ControladorPromedios controladorPromedios;
     private HttpServer servidor;
 
-    public ServidorWeb(ControladorLogin controladorLogin, Path carpetaPublica, int puerto) {
-        this(controladorLogin, carpetaPublica, puerto,
-                new controladorTareas(), null);
-    }
-
-    public ServidorWeb(ControladorLogin controladorLogin, Path carpetaPublica,
-                       int puerto, controladorTareas controladorTareas) {
-        this(controladorLogin, carpetaPublica, puerto,
-                controladorTareas, null);
-    }
-
-    public ServidorWeb(ControladorLogin controladorLogin, Path carpetaPublica,
-                       int puerto, ServiciosMySQL serviciosMySQL) {
-        this(controladorLogin, carpetaPublica, puerto,
-                new controladorTareas(), serviciosMySQL);
-    }
-
-    public ServidorWeb(ControladorLogin controladorLogin, Path carpetaPublica,
-                       int puerto, controladorTareas controladorTareas,
-                       ServiciosMySQL serviciosMySQL) {
-        this.controladorLogin = controladorLogin;
-        this.carpetaPublica = carpetaPublica.toAbsolutePath().normalize();
-        this.puerto = puerto;
-        this.controladorTareas = controladorTareas;
-        this.serviciosMySQL = serviciosMySQL;
-        // RF03 y RF12 comparten el mismo repositorio de calificaciones.
-        RepositorioCalificaciones repositorioCalificaciones =
-            serviciosMySQL == null
-                ? new RepositorioCalificacionesMemoria()
-                : obtenerRepositorioCalificaciones(serviciosMySQL);
-
-        this.controladorCalificaciones =
-        new ControladorCalificaciones(
-            repositorioCalificaciones
+   public ServidorWeb(
+        ControladorLogin controladorLogin,
+        Path carpetaPublica,
+        int puerto,
+        ServiciosMySQL serviciosMySQL
+) {
+    if (controladorLogin == null || serviciosMySQL == null) {
+        throw new IllegalArgumentException(
+                "El login y los servicios MySQL son obligatorios."
         );
-
-        this.controladorPromedios =
-            new ControladorPromedios(repositorioCalificaciones);
     }
 
-    private RepositorioCalificaciones obtenerRepositorioCalificaciones(
-            ServiciosMySQL servicios) {
-        return servicios.getRepositorioCalificaciones();
-    }
+    this.controladorLogin = controladorLogin;
+    this.carpetaPublica = carpetaPublica.toAbsolutePath().normalize();
+    this.puerto = puerto;
+    this.serviciosMySQL = serviciosMySQL;
 
-
+    this.controladorCalificaciones = serviciosMySQL.getCalificaciones();
+    this.controladorPromedios = serviciosMySQL.getPromedios();
+}
     // =====================================================
     // INICIAR SERVIDOR WEB
     // =====================================================
@@ -92,8 +62,8 @@ public class ServidorWeb {
 
         servidor.createContext("/api/login", this::manejarLogin);
         servidor.createContext("/api/logout", this::manejarLogout);
-        servidor.createContext("/api/tareas/completar", this::completarTarea);
-        servidor.createContext("/api/tareas", this::manejarTareas);
+        servidor.createContext("/api/tareas/completar",this::completarTareaMySQL);
+        servidor.createContext("/api/tareas",this::manejarTareasMySQL );
         servidor.createContext("/api/cursos", this::manejarCursos);
 
         // RF03 - Calificaciones
@@ -388,7 +358,20 @@ public class ServidorWeb {
             return;
         }
 
-        boolean accesoCorrecto = controladorLogin.iniciarSesion(usuario, contrasena);
+        boolean accesoCorrecto;
+
+try {
+    accesoCorrecto = controladorLogin.iniciarSesion(usuario, contrasena);
+} catch (IllegalStateException error) {
+    error.printStackTrace();
+
+    responder(
+            intercambio,
+            500,
+            "{\"exitoso\":false,\"mensaje\":\"No se pudo consultar la base de datos.\"}"
+    );
+    return;
+}
         String mensaje = accesoCorrecto
                 ? "Inicio de sesión correcto."
                 : "Usuario o contraseña incorrectos.";
@@ -423,11 +406,6 @@ public class ServidorWeb {
             return;
         }
 
-        if (serviciosMySQL == null) {
-            responder(intercambio, 503,
-                    "{\"mensaje\":\"MySQL no estÃ¡ configurado.\"}");
-            return;
-        }
 
         try {
             long idUsuario = Long.parseLong(
@@ -492,80 +470,17 @@ public class ServidorWeb {
     }
 
     private String obtenerIdUsuarioParaDatos(Usuario usuario) {
-        if (serviciosMySQL == null) {
-            return usuario.getCarne();
-        }
+    return serviciosMySQL.getUsuarios()
+            .buscarId(usuario.getNombreUsuario())
+            .map(String::valueOf)
+            .orElseThrow(() -> new IllegalStateException(
+                    "El usuario autenticado no existe en MySQL."
+            ));
+}
 
-        return serviciosMySQL.getUsuarios()
-                .buscarId(usuario.getNombreUsuario())
-                .map(String::valueOf)
-                .orElseThrow(() -> new IllegalStateException(
-                        "El usuario autenticado no existe en MySQL."));
-    }
+   
 
-    private void manejarTareas(HttpExchange intercambio) throws IOException {
-        if (serviciosMySQL != null) {
-            manejarTareasMySQL(intercambio);
-            return;
-        }
-
-        if ("GET".equalsIgnoreCase(intercambio.getRequestMethod())) {
-            responder(intercambio, 200, convertirTareasAJson());
-            return;
-        }
-
-        if (!"POST".equalsIgnoreCase(intercambio.getRequestMethod())) {
-            responder(intercambio, 405,
-                    "{\"mensaje\":\"Método no permitido.\"}");
-            return;
-        }
-
-        Map<String, String> datos = leerFormulario(leerCuerpo(intercambio));
-        try {
-            controladorTareas.registrartarea(
-                    datos.get("nombre"),
-                    datos.get("fechaEntrega"),
-                    datos.get("prioridad")
-            );
-            responder(intercambio, 201,
-                    "{\"exitoso\":true,\"mensaje\":\"Tarea creada.\"}");
-        } catch (IllegalArgumentException error) {
-            responder(intercambio, 400,
-                    "{\"exitoso\":false,\"mensaje\":\""
-                            + escaparJson(error.getMessage()) + "\"}");
-        }
-    }
-
-    private void completarTarea(HttpExchange intercambio) throws IOException {
-        if (serviciosMySQL != null) {
-            completarTareaMySQL(intercambio);
-            return;
-        }
-
-        if (!"POST".equalsIgnoreCase(intercambio.getRequestMethod())) {
-            responder(intercambio, 405,
-                    "{\"mensaje\":\"Método no permitido.\"}");
-            return;
-        }
-
-        Map<String, String> datos = leerFormulario(leerCuerpo(intercambio));
-        try {
-            int indice = Integer.parseInt(datos.get("indice"));
-            List<Tarea> tareas = controladorTareas.getListaTareas();
-            if (indice < 0 || indice >= tareas.size()) {
-                throw new IllegalArgumentException("La tarea no existe.");
-            }
-
-            controladorTareas.marcarCompletada(tareas.get(indice));
-            responder(intercambio, 200,
-                    "{\"exitoso\":true,\"mensaje\":\"Tarea completada.\"}");
-        } catch (IllegalArgumentException error) {
-            responder(intercambio, 400,
-                    "{\"exitoso\":false,\"mensaje\":\""
-                            + escaparJson(error.getMessage()) + "\"}");
-        }
-    }
-
+   
     private void manejarTareasMySQL(HttpExchange intercambio)
             throws IOException {
         if (!"GET".equalsIgnoreCase(intercambio.getRequestMethod())
@@ -612,7 +527,8 @@ public class ServidorWeb {
                     idUsuario,
                     Long.parseLong(curso),
                     nombre,
-                    fecha
+                    fecha,
+                    datos.get("prioridad")
             );
 
             responder(intercambio, 201,
@@ -673,9 +589,7 @@ public class ServidorWeb {
         }
     }
 
-    private String convertirTareasAJson() {
-        return convertirTareasAJson(controladorTareas.getListaTareas());
-    }
+    
 
     private String convertirTareasAJson(List<Tarea> tareas) {
         StringBuilder json = new StringBuilder("[");
