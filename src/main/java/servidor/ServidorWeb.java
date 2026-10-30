@@ -542,10 +542,13 @@ try {
             responder(intercambio, 400,
                     "{\"exitoso\":false,\"mensaje\":\""
                             + escaparJson(error.getMessage()) + "\"}");
-        } catch (IllegalStateException error) {
-            responder(intercambio, 500,
-                    "{\"exitoso\":false,\"mensaje\":\"No se pudieron consultar las tareas.\"}");
-        }
+        }  catch (IllegalStateException error) {
+    System.err.println("ERROR AL CONSULTAR O GUARDAR TAREAS:");
+    error.printStackTrace();
+
+    responder(intercambio, 500,
+            "{\"exitoso\":false,\"mensaje\":\"No se pudieron consultar las tareas.\"}");
+}
     }
 
     private void completarTareaMySQL(HttpExchange intercambio)

@@ -76,10 +76,11 @@ public class PersistenciaTareasMySQL {
 
         
         String sql =
-                "INSERT INTO tareas "
-                + "(usuario_id, curso_id, nombre, "
-                + "fecha_entrega, completada, prioridad) "
-                + "VALUES (?, ?, ?, ?, ?)";
+        "SELECT id, curso_id, nombre, fecha_entrega, "
+        + "completada, prioridad "
+        + "FROM tareas "
+        + "WHERE usuario_id = ? "
+        + "ORDER BY completada, fecha_entrega, id";
 
         try (
             Connection conexion = bd.abrir();
@@ -124,12 +125,7 @@ public class PersistenciaTareasMySQL {
     public List<Tarea> consultarPorUsuario(long usuarioId) {
         validarId(usuarioId, "usuario");
 
-        String sql =
-                "SELECT id, curso_id, nombre, fecha_entrega, completada "
-                + "FROM tareas "
-                + "WHERE usuario_id = ? "
-                + "ORDER BY completada, fecha_entrega, id"
-                + "ORDER BY completada, fecha_entrega, id";
+        String sql = "SELECT id, curso_id, nombre, fecha_entrega, completada, prioridad FROM tareas WHERE usuario_id = ? ORDER BY completada, fecha_entrega, id";
 
         List<Tarea> tareas = new ArrayList<>();
 

@@ -55,9 +55,8 @@ CREATE TABLE IF NOT EXISTS tareas (
     curso_id BIGINT NULL,
     nombre VARCHAR(150) NOT NULL,
     fecha_entrega DATE NOT NULL,
+    prioridad VARCHAR(30) NOT NULL DEFAULT 'media',
     completada BOOLEAN NOT NULL DEFAULT FALSE,
-    prioridad VARCHAR(30) NOT NULL DEFAULT "media",
-    AFTER fecha_entrega;
 
     INDEX idx_tareas_curso_usuario (curso_id, usuario_id),
 
@@ -69,7 +68,6 @@ CREATE TABLE IF NOT EXISTS tareas (
         FOREIGN KEY (curso_id, usuario_id)
         REFERENCES cursos(id, usuario_id)
 );
-
 -- =====================================================
 -- 4. Calificaciones
 -- =====================================================
