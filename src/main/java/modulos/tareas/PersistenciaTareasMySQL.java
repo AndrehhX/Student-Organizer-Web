@@ -76,11 +76,10 @@ public class PersistenciaTareasMySQL {
 
         
         String sql =
-        "SELECT id, curso_id, nombre, fecha_entrega, "
-        + "completada, prioridad "
-        + "FROM tareas "
-        + "WHERE usuario_id = ? "
-        + "ORDER BY completada, fecha_entrega, id";
+        "INSERT INTO tareas "
+        + "(usuario_id, curso_id, nombre, "
+        + "fecha_entrega, completada, prioridad) "
+        + "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (
             Connection conexion = bd.abrir();
