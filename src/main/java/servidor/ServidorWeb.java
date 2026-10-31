@@ -101,7 +101,7 @@ public class ServidorWeb {
 
         // Identificacion temporal para pruebas locales.
         // Pendiente: sesiones independientes por navegador.
-        Usuario usuario = controladorLogin.getUsuarioActual();
+        Usuario usuario = controladorLogin.getUsuarioActual(obtenerToken(intercambio));
 
         if (usuario == null) {
             responder(intercambio, 401,
@@ -266,7 +266,7 @@ public class ServidorWeb {
 
         // Identificacion temporal para pruebas locales.
         // Pendiente: sesiones independientes por navegador.
-        Usuario usuario = controladorLogin.getUsuarioActual();
+        Usuario usuario = controladorLogin.getUsuarioActual(obtenerToken(intercambio));
 
         if (usuario == null) {
             responder(intercambio, 401,
@@ -361,7 +361,19 @@ public class ServidorWeb {
         boolean accesoCorrecto;
 
 try {
-    accesoCorrecto = controladorLogin.iniciarSesion(usuario, contrasena);
+    
+
+    controladorLogin.cerrarSesion(obtenerToken(intercambio));
+    establecerCookie(intercambio, null);
+
+    Optional<String> token =
+        controladorLogin.iniciarSesion(usuario, contrasena);
+
+    accesoCorrecto = token.isPresent();
+
+    if (accesoCorrecto) {
+        establecerCookie(intercambio, token.get());
+}
 } catch (IllegalStateException error) {
     error.printStackTrace();
 
@@ -386,7 +398,9 @@ try {
             return;
         }
 
-        controladorLogin.cerrarSesion();
+        controladorLogin.cerrarSesion(obtenerToken(intercambio));
+        establecerCookie(intercambio, null);
+
         responder(intercambio, 200,
                 "{\"exitoso\":true,\"mensaje\":\"SesiÃ³n cerrada.\"}");
     }
@@ -399,7 +413,7 @@ try {
             return;
         }
 
-        Usuario usuario = controladorLogin.getUsuarioActual();
+        Usuario usuario = controladorLogin.getUsuarioActual(obtenerToken(intercambio));
         if (usuario == null) {
             responder(intercambio, 401,
                     "{\"mensaje\":\"Debes iniciar sesiÃ³n.\"}");
@@ -490,7 +504,7 @@ try {
             return;
         }
 
-        Usuario usuario = controladorLogin.getUsuarioActual();
+        Usuario usuario = controladorLogin.getUsuarioActual(obtenerToken(intercambio));
         if (usuario == null) {
             responder(intercambio, 401,
                     "{\"mensaje\":\"Debes iniciar sesiÃ³n.\"}");
@@ -542,10 +556,13 @@ try {
             responder(intercambio, 400,
                     "{\"exitoso\":false,\"mensaje\":\""
                             + escaparJson(error.getMessage()) + "\"}");
-        } catch (IllegalStateException error) {
-            responder(intercambio, 500,
-                    "{\"exitoso\":false,\"mensaje\":\"No se pudieron consultar las tareas.\"}");
-        }
+        }  catch (IllegalStateException error) {
+    System.err.println("ERROR AL CONSULTAR O GUARDAR TAREAS:");
+    error.printStackTrace();
+
+    responder(intercambio, 500,
+            "{\"exitoso\":false,\"mensaje\":\"No se pudieron consultar las tareas.\"}");
+}
     }
 
     private void completarTareaMySQL(HttpExchange intercambio)
@@ -556,7 +573,7 @@ try {
             return;
         }
 
-        Usuario usuario = controladorLogin.getUsuarioActual();
+        Usuario usuario = controladorLogin.getUsuarioActual(obtenerToken(intercambio));
         if (usuario == null) {
             responder(intercambio, 401,
                     "{\"mensaje\":\"Debes iniciar sesiÃ³n.\"}");
@@ -688,4 +705,47 @@ try {
     private String escaparJson(String texto) {
         return texto.replace("\\", "\\\\").replace("\"", "\\\"");
     }
+
+
+private String obtenerToken(HttpExchange intercambio) {
+    List<String> cookies =
+            intercambio.getRequestHeaders().get("Cookie");
+
+    if (cookies == null) {
+        return null;
+    }
+
+    for (String cabecera : cookies) {
+        for (String parte : cabecera.split(";")) {
+            String[] cookie = parte.trim().split("=", 2);
+
+            if (cookie.length == 2
+                    && cookie[0].equals("student_session")) {
+                return cookie[1];
+            }
+        }
+    }
+
+    return null;
 }
+
+private void establecerCookie(
+        HttpExchange intercambio,
+        String token
+) {
+    String cookie;
+
+    if (token == null) {
+        cookie = "student_session=; Path=/; HttpOnly; "
+                + "SameSite=Lax; Max-Age=0";
+    } else {
+        cookie = "student_session=" + token
+                + "; Path=/; HttpOnly; SameSite=Lax";
+    }
+
+    intercambio.getResponseHeaders().set("Set-Cookie", cookie);
+}
+}
+
+
+
