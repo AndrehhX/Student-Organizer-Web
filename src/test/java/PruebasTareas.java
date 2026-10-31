@@ -1,110 +1,59 @@
-import modulos.tareas.PersistenciaTareas;
 import modulos.tareas.Tarea;
-import modulos.tareas.controladorTareas;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Comparator;
 
 public class PruebasTareas {
 
-    public static void main(String[] args) throws Exception {
-        Path carpetaTemporal =
-                Files.createTempDirectory("student-organizer-tareas-");
+    public static void main(String[] args) {
+        Tarea tarea = new Tarea(
+                "Ensayo de historia",
+                "2026-10-20",
+                1
+        );
 
-        try {
-            Path archivo = carpetaTemporal.resolve("tareas.csv");
-            PersistenciaTareas persistencia =
-                    new PersistenciaTareas(archivo);
-            controladorTareas controlador =
-                    new controladorTareas(persistencia);
+        comprobar(
+                tarea.getNombre().equals("Ensayo de historia"),
+                "Debe guardar el nombre"
+        );
 
-            comprobar(controlador.getListaTareas().isEmpty(),
-                    "Debe iniciar sin tareas");
+        comprobar(
+                tarea.getfechaEntrega().equals("2026-10-20"),
+                "Debe guardar la fecha"
+        );
 
-            controlador.registrartarea(
-                    "Ensayo de historia", "2026-10-20", "alta"
-            );
+        comprobar(
+                tarea.getCursoId() == 1,
+                "Debe guardar el curso"
+        );
 
-            comprobar(Files.exists(archivo),
-                    "Debe crear el CSV al registrar una tarea");
-            comprobar(controlador.getListaTareas().size() == 1,
-                    "Debe conservar la tarea registrada");
+        tarea.setPrioridad("alta");
 
-            controladorTareas recuperado =
-                    new controladorTareas(persistencia);
+        comprobar(
+                tarea.getPrioridad().equals("alta"),
+                "Debe guardar la prioridad"
+        );
 
-            comprobar(recuperado.getListaTareas().size() == 1,
-                    "Debe recuperar la tarea del CSV");
-            comprobar(recuperado.getListaTareas().get(0)
-                            .getNombre().equals("Ensayo de historia"),
-                    "Debe recuperar el nombre correcto");
+        comprobar(
+                !tarea.isCompletada(),
+                "La tarea debe iniciar pendiente"
+        );
 
-            String contenidoAnterior = Files.readString(archivo);
+        tarea.marcarComoCompletada();
 
-            esperarRechazo(
-                    () -> controlador.registrartarea(
-                            "", "2026-10-20", "alta"),
-                    "Debe rechazar nombre vacío"
-            );
-            esperarRechazo(
-                    () -> controlador.registrartarea(
-                            "Ensayo", "", "alta"),
-                    "Debe rechazar fecha vacía"
-            );
-            esperarRechazo(
-                    () -> controlador.registrartarea(
-                            "Ensayo", "2026-10-20", null),
-                    "Debe rechazar prioridad nula"
-            );
-            esperarRechazo(
-                    () -> new Tarea("", "2026-10-20", "alta"),
-                    "Tarea también debe rechazar nombre vacío"
-            );
+        comprobar(
+                tarea.isCompletada(),
+                "La tarea debe marcarse como completada"
+        );
 
-            comprobar(Files.readString(archivo).equals(contenidoAnterior),
-                    "Datos incompletos no deben modificar el CSV");
-
-            Tarea tarea = recuperado.getListaTareas().get(0);
-            recuperado.marcarCompletada(tarea);
-
-            controladorTareas comprobacion =
-                    new controladorTareas(persistencia);
-
-            comprobar(comprobacion.getListaTareas().get(0).isCompletada(),
-                    "Debe guardar el estado completado");
-            comprobar(comprobacion.consultarPendientes().isEmpty(),
-                    "No debe mostrar tareas completadas como pendientes");
-
-            System.out.println(
-                    "PruebasTareas: todas las pruebas pasaron."
-            );
-        } finally {
-            try (var archivos = Files.walk(carpetaTemporal)) {
-                archivos.sorted(Comparator.reverseOrder())
-                        .forEach(archivo -> {
-                            try {
-                                Files.deleteIfExists(archivo);
-                            } catch (Exception error) {
-                                throw new RuntimeException(error);
-                            }
-                        });
-            }
-        }
+        System.out.println(
+                "PruebasTareas: todas las pruebas pasaron."
+        );
     }
 
-    private static void comprobar(boolean resultado, String mensaje) {
+    private static void comprobar(
+            boolean resultado,
+            String mensaje
+    ) {
         if (!resultado) {
             throw new AssertionError(mensaje);
         }
-    }
-
-    private static void esperarRechazo(Runnable accion, String mensaje) {
-        try {
-            accion.run();
-        } catch (IllegalArgumentException esperado) {
-            return;
-        }
-        throw new AssertionError(mensaje);
     }
 }

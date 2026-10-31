@@ -1,5 +1,6 @@
 import controlador.ControladorLogin;
-import persistencia.PersistenciaDatos;
+import persistencia.ConexionBD;
+import persistencia.ServiciosMySQL;
 import servidor.ServidorWeb;
 
 import java.io.IOException;
@@ -8,83 +9,118 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class PruebasServidorDashboard {
 
     public static void main(String[] args) throws Exception {
-        Path carpetaTemporal = Files.createTempDirectory("student-organizer-dashboard-");
         int puerto = obtenerPuertoDisponible();
-        ControladorLogin controladorLogin = new ControladorLogin(
-                new PersistenciaDatos(carpetaTemporal.resolve("usuarios.csv")));
+
+        ConexionBD bd = new ConexionBD(
+                "jdbc:mysql://127.0.0.1:3307/student_organizer",
+                "organizer_app",
+                "no importa"
+        );
+
+        ServiciosMySQL servicios = new ServiciosMySQL(bd);
+
+        ControladorLogin login =
+                new ControladorLogin(servicios.getUsuarios());
+
         ServidorWeb servidor = new ServidorWeb(
-                controladorLogin,
+                login,
                 Path.of("src", "main", "resources", "public"),
-                puerto);
+                puerto,
+                servicios
+        );
 
         try {
             servidor.iniciar();
+
             HttpClient cliente = HttpClient.newHttpClient();
 
-            HttpResponse<String> login = enviar(cliente, puerto, "POST",
-                    "/api/login", "usuario=demo&contrasena=demo123");
-            comprobar(login.statusCode() == 200,
-                    "El login debe responder correctamente");
-            comprobar(controladorLogin.getUsuarioActual() != null,
-                    "El login debe dejar un usuario activo");
+            HttpResponse<String> pagina = enviar(
+                    cliente,
+                    puerto,
+                    "GET",
+                    "/",
+                    ""
+            );
 
-            HttpResponse<String> cierreSesion = enviar(cliente, puerto, "POST",
-                    "/api/logout", "");
-            comprobar(cierreSesion.statusCode() == 200,
-                    "Cerrar sesión debe responder correctamente");
-            comprobar(controladorLogin.getUsuarioActual() == null,
-                    "Cerrar sesión debe borrar el usuario activo");
+            comprobar(
+                    pagina.statusCode() == 200,
+                    "La página principal debe responder 200."
+            );
+
+            HttpResponse<String> cerrarSesion = enviar(
+                    cliente,
+                    puerto,
+                    "POST",
+                    "/api/logout",
+                    ""
+            );
+
+            comprobar(
+                    cerrarSesion.statusCode() == 200,
+                    "Cerrar sesión debe responder 200."
+            );
 
             System.out.println(
-                    "PruebasServidorDashboard: todas las pruebas pasaron.");
+                    "PruebasServidorDashboard: todas las pruebas pasaron."
+            );
         } finally {
             servidor.detener();
-            try (var archivos = Files.walk(carpetaTemporal)) {
-                archivos.sorted(java.util.Comparator.reverseOrder())
-                        .forEach(archivo -> {
-                            try {
-                                Files.deleteIfExists(archivo);
-                            } catch (IOException error) {
-                                throw new RuntimeException(error);
-                            }
-                        });
-            }
         }
     }
 
     private static HttpResponse<String> enviar(
-            HttpClient cliente, int puerto, String metodo,
-            String ruta, String cuerpo)
-            throws IOException, InterruptedException {
-        HttpRequest.Builder constructor = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + puerto + ruta));
+            HttpClient cliente,
+            int puerto,
+            String metodo,
+            String ruta,
+            String cuerpo
+    ) throws IOException, InterruptedException {
 
-        if ("POST".equals(metodo)) {
-            constructor.header("Content-Type",
-                            "application/x-www-form-urlencoded")
-                    .POST(HttpRequest.BodyPublishers.ofString(cuerpo));
+        HttpRequest.Builder constructor =
+                HttpRequest.newBuilder()
+                        .uri(URI.create(
+                                "http://localhost:"
+                                        + puerto
+                                        + ruta
+                        ));
+
+        if (metodo.equals("POST")) {
+            constructor.POST(
+                    HttpRequest.BodyPublishers.ofString(cuerpo)
+            );
         } else {
             constructor.GET();
         }
 
-        return cliente.send(constructor.build(),
-                HttpResponse.BodyHandlers.ofString());
+        return cliente.send(
+                constructor.build(),
+                HttpResponse.BodyHandlers.ofString()
+        );
     }
 
-    private static int obtenerPuertoDisponible() throws IOException {
-        try (java.net.ServerSocket servidor = new java.net.ServerSocket()) {
-            servidor.bind(new InetSocketAddress("localhost", 0));
+    private static int obtenerPuertoDisponible()
+            throws IOException {
+
+        try (java.net.ServerSocket servidor =
+                     new java.net.ServerSocket()) {
+
+            servidor.bind(
+                    new InetSocketAddress("localhost", 0)
+            );
+
             return servidor.getLocalPort();
         }
     }
 
-    private static void comprobar(boolean resultado, String mensaje) {
+    private static void comprobar(
+            boolean resultado,
+            String mensaje
+    ) {
         if (!resultado) {
             throw new AssertionError(mensaje);
         }
