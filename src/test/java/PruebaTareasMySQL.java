@@ -77,6 +77,16 @@ public class PruebaTareasMySQL {
                 guardada.getCursoId() == curso.getIdCurso(),
                 "Debe conservar el curso de la tarea."
         );
+
+        List<Tarea> tareasDelCurso = persistencia.consultarPorCurso(
+                usuarioId,
+                curso.getIdCurso()
+        );
+        comprobar(
+                tareasDelCurso.stream().anyMatch(t -> t.getId() == tareaId),
+                "Debe poder consultar las tareas por curso."
+        );
+
         comprobar(
                 !guardada.isCompletada(),
                 "La tarea debe iniciar pendiente."

@@ -65,6 +65,7 @@ public class ServidorWeb {
         servidor.createContext("/api/logout", this::manejarLogout);
         servidor.createContext("/api/tareas/completar",this::completarTareaMySQL);
         servidor.createContext("/api/tareas",this::manejarTareasMySQL );
+        servidor.createContext("/api/cursos/detalle", this::manejarDetalleCurso);
         servidor.createContext("/api/cursos", this::manejarCursos);
 
         // RF03 - Calificaciones
@@ -514,6 +515,74 @@ try {
         }
     }
 
+    /**
+     * Devuelve las calificaciones y tareas de un curso del usuario actual.
+     */
+    private void manejarDetalleCurso(HttpExchange intercambio)
+            throws IOException {
+        if (!"GET".equalsIgnoreCase(intercambio.getRequestMethod())) {
+            responder(intercambio, 405,
+                    "{\"mensaje\":\"Método no permitido.\"}");
+            return;
+        }
+
+        Usuario usuario = controladorLogin.getUsuarioActual(
+                obtenerToken(intercambio));
+        if (usuario == null) {
+            responder(intercambio, 401,
+                    "{\"mensaje\":\"Debes iniciar sesión.\"}");
+            return;
+        }
+
+        try {
+            String cursoTexto = obtenerParametroConsulta(intercambio, "cursoId");
+            if (cursoTexto == null || cursoTexto.isBlank()) {
+                responder(intercambio, 400,
+                        "{\"mensaje\":\"Debes indicar el curso.\"}");
+                return;
+            }
+
+            long usuarioId = Long.parseLong(obtenerIdUsuarioParaDatos(usuario));
+            long cursoId = Long.parseLong(cursoTexto);
+
+            Optional<modulos.Cursos.Curso> curso = serviciosMySQL.getCursos()
+                    .buscarPorId(usuarioId, cursoId);
+            if (curso.isEmpty()) {
+                responder(intercambio, 404,
+                        "{\"mensaje\":\"El curso no existe.\"}");
+                return;
+            }
+
+            List<Calificacion> calificaciones =
+                    controladorCalificaciones.listarCalificacionesPorCurso(
+                            String.valueOf(usuarioId), String.valueOf(cursoId));
+            List<Tarea> tareas = serviciosMySQL.getTareas()
+                    .listarTareasPorCurso(usuarioId, cursoId);
+
+            StringBuilder json = new StringBuilder("{\"curso\":{");
+            json.append("\"idCurso\":").append(curso.get().getIdCurso())
+                    .append(",\"nombreCurso\":\"")
+                    .append(escaparJson(curso.get().getNombreCurso()))
+                    .append("\"},\"calificaciones\":")
+                    .append(convertirCalificacionesAJson(calificaciones))
+                    .append(",\"tareas\":")
+                    .append(convertirTareasAJson(tareas))
+                    .append('}');
+
+            responder(intercambio, 200, json.toString());
+        } catch (NumberFormatException error) {
+            responder(intercambio, 400,
+                    "{\"mensaje\":\"El ID del curso no es válido.\"}");
+        } catch (IllegalArgumentException error) {
+            responder(intercambio, 400,
+                    "{\"mensaje\":\""
+                            + escaparJson(error.getMessage()) + "\"}");
+        } catch (IllegalStateException error) {
+            responder(intercambio, 500,
+                    "{\"mensaje\":\"No se pudo consultar el curso.\"}");
+        }
+    }
+
     private String convertirCursosAJson(List<modulos.Cursos.Curso> cursos) {
         StringBuilder json = new StringBuilder("[");
 
@@ -679,7 +748,11 @@ try {
                     .append(escaparJson(tarea.getPrioridad() == null
                             ? ""
                             : tarea.getPrioridad()))
-                    .append("\",\"completada\":")
+                    .append("\",\"cursoId\":")
+                    .append(tarea.getCursoId() == null
+                            ? "null"
+                            : tarea.getCursoId())
+                    .append(",\"completada\":")
                     .append(tarea.isCompletada())
                     .append('}');
         }
@@ -731,6 +804,17 @@ try {
             }
         }
         return datos;
+    }
+
+    private String obtenerParametroConsulta(
+            HttpExchange intercambio,
+            String nombre) {
+        String consulta = intercambio.getRequestURI().getRawQuery();
+        if (consulta == null || consulta.isBlank()) {
+            return null;
+        }
+
+        return leerFormulario(consulta).get(nombre);
     }
 
     private String decodificar(String valor) {

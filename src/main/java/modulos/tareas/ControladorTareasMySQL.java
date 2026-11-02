@@ -67,6 +67,19 @@ public class ControladorTareasMySQL {
     }
 
     /**
+     * Recupera las tareas de un curso del usuario.
+     */
+    public List<Tarea> listarTareasPorCurso(long usuarioId, long cursoId) {
+        if (cursos.buscarPorId(usuarioId, cursoId).isEmpty()) {
+            throw new IllegalArgumentException(
+                    "El curso no existe o no pertenece al usuario."
+            );
+        }
+
+        return tareas.consultarPorCurso(usuarioId, cursoId);
+    }
+
+    /**
      * Recupera únicamente las tareas pendientes del usuario.
      */
     public List<Tarea> consultarPendientes(long usuarioId) {

@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cargarCursos();
     cargarCalificaciones();
+    document.addEventListener('cursos:actualizados', cargarCursos);
 
     // =====================================================
     // REGISTRAR CALIFICACION

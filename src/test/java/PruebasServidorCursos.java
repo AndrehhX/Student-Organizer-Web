@@ -56,6 +56,23 @@ public class PruebasServidorCursos {
                     "Sin iniciar sesión debe responder 401."
             );
 
+            HttpResponse<String> detalle = cliente.send(
+                    HttpRequest.newBuilder()
+                            .uri(URI.create(
+                                    "http://localhost:"
+                                            + puerto
+                                            + "/api/cursos/detalle?cursoId=1"
+                            ))
+                            .GET()
+                            .build(),
+                    HttpResponse.BodyHandlers.ofString()
+            );
+
+            comprobar(
+                    detalle.statusCode() == 401,
+                    "El detalle de curso también debe exigir sesión."
+            );
+
             System.out.println(
                     "PruebasServidorCursos: todas las pruebas pasaron."
             );
