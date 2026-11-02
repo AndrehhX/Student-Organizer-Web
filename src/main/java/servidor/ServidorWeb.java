@@ -61,6 +61,7 @@ public class ServidorWeb {
         servidor = HttpServer.create(new InetSocketAddress(puerto), 0);
 
         servidor.createContext("/api/login", this::manejarLogin);
+        servidor.createContext("/api/usuarios", this::manejarRegistroUsuario);
         servidor.createContext("/api/logout", this::manejarLogout);
         servidor.createContext("/api/tareas/completar",this::completarTareaMySQL);
         servidor.createContext("/api/tareas",this::manejarTareasMySQL );
@@ -389,6 +390,57 @@ try {
                 : "Usuario o contraseña incorrectos.";
         responder(intercambio, 200, "{\"exitoso\":" + accesoCorrecto
                 + ",\"mensaje\":\"" + escaparJson(mensaje) + "\"}");
+    }
+
+    private void manejarRegistroUsuario(HttpExchange intercambio)
+            throws IOException {
+        if (!"POST".equalsIgnoreCase(intercambio.getRequestMethod())) {
+            responder(intercambio, 405,
+                    "{\"exitoso\":false,\"mensaje\":\"Método no permitido.\"}");
+            return;
+        }
+
+        Map<String, String> datos = leerFormulario(
+                leerCuerpo(intercambio)
+        );
+
+        String nombre = datos.get("usuario");
+        String contrasena = datos.get("contrasena");
+        String carne = datos.get("carne");
+
+        if (nombre == null || nombre.trim().isEmpty()
+                || contrasena == null || contrasena.trim().isEmpty()
+                || carne == null || carne.trim().isEmpty()) {
+            responder(intercambio, 400,
+                    "{\"exitoso\":false,\"mensaje\":\"Usuario, contraseña y carné son obligatorios.\"}");
+            return;
+        }
+
+        try {
+            Usuario usuario = new Usuario(
+                    nombre.trim(),
+                    contrasena,
+                    carne.trim()
+            );
+
+            long id = serviciosMySQL.getUsuarios().guardar(usuario);
+
+            responder(intercambio, 201,
+                    "{\"exitoso\":true,\"id\":" + id
+                            + ",\"mensaje\":\"Usuario registrado correctamente.\"}");
+        } catch (IllegalArgumentException error) {
+            int estado = error.getMessage() != null
+                    && error.getMessage().startsWith("Ya existe")
+                    ? 409
+                    : 400;
+
+            responder(intercambio, estado,
+                    "{\"exitoso\":false,\"mensaje\":\""
+                            + escaparJson(error.getMessage()) + "\"}");
+        } catch (IllegalStateException error) {
+            responder(intercambio, 500,
+                    "{\"exitoso\":false,\"mensaje\":\"No se pudo guardar el usuario.\"}");
+        }
     }
 
     private void manejarLogout(HttpExchange intercambio) throws IOException {
