@@ -89,8 +89,7 @@ h1 {
     font-size: clamp(2rem, 7vw, 3rem);
 }
 
-.subtitulo,
-.nota-demo {
+.subtitulo {
     color: var(--suave);
     line-height: 1.5;
 }
@@ -199,17 +198,6 @@ button:disabled {
 
 .mensaje.exito {
     color: var(--exito);
-}
-
-.nota-demo {
-    padding-top: 14px;
-    border-top: 1px solid var(--borde);
-}
-
-.nota-demo {
-    margin: 26px 0 0;
-    font-size: 0.82rem;
-    text-align: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
