@@ -7,6 +7,7 @@ import persistencia.ConexionBD;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.List;
 
 public class PruebaTareasMySQL {
     public static void main(String[] args) throws Exception {
@@ -57,8 +58,69 @@ public class PruebaTareasMySQL {
 
         long tareaId = persistencia.guardarTarea(usuarioId, tarea);
 
+        comprobar(tareaId > 0,
+                "Debe devolver el ID de la tarea guardada.");
+
+        List<Tarea> tareas = persistencia.consultarPorUsuario(usuarioId);
+        Tarea guardada = tareas.stream()
+                .filter(t -> t.getId() == tareaId)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(
+                        "La tarea guardada debe aparecer al consultarla."
+                ));
+
+        comprobar(
+                guardada.getNombre().equals("Tarea creada desde Java"),
+                "Debe conservar el nombre de la tarea."
+        );
+        comprobar(
+                guardada.getCursoId() == curso.getIdCurso(),
+                "Debe conservar el curso de la tarea."
+        );
+
+        List<Tarea> tareasDelCurso = persistencia.consultarPorCurso(
+                usuarioId,
+                curso.getIdCurso()
+        );
+        comprobar(
+                tareasDelCurso.stream().anyMatch(t -> t.getId() == tareaId),
+                "Debe poder consultar las tareas por curso."
+        );
+
+        comprobar(
+                !guardada.isCompletada(),
+                "La tarea debe iniciar pendiente."
+        );
+
+        comprobar(
+                persistencia.marcarCompletada(usuarioId, tareaId),
+                "Debe poder marcar la tarea como completada."
+        );
+
+        Tarea completada = persistencia.consultarPorUsuario(usuarioId)
+                .stream()
+                .filter(t -> t.getId() == tareaId)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(
+                        "La tarea completada debe seguir existiendo."
+                ));
+
+        comprobar(
+                completada.isCompletada(),
+                "La tarea debe quedar completada en MySQL."
+        );
+
         System.out.println("Tarea guardada en MySQL. ID: " + tareaId);
         System.out.println("Usuario propietario. ID: " + usuarioId);
         System.out.println("Curso. ID: " + curso.getIdCurso());
+    }
+
+    private static void comprobar(
+            boolean condicion,
+            String mensaje
+    ) {
+        if (!condicion) {
+            throw new IllegalStateException("FALLÓ: " + mensaje);
+        }
     }
 }

@@ -182,35 +182,10 @@
                         </h2>
                     </div>
 
-                    <!-- Contenedores (MATE, QUÍMICA, ESTADÍSTICA) -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                        <!-- MATE -->
-                        <div class="bg-brand-bright/30 rounded-xl p-4 border border-brand-medium/30 flex flex-col items-center text-center hover:border-brand-medium transition-all">
-                            <div class="w-12 h-12 rounded-full bg-brand-dark text-brand-white flex items-center justify-center font-bold text-lg mb-2">
-                                MA
-                            </div>
-                            <h3 class="font-bold text-brand-dark text-lg uppercase tracking-wide">MATE</h3>
-                            <p class="text-xs text-gray-500 mt-1">Estadísticas / Notas</p>
-                        </div>
-
-                        <!-- QUÍMICA -->
-                        <div class="bg-brand-bright/30 rounded-xl p-4 border border-brand-medium/30 flex flex-col items-center text-center hover:border-brand-medium transition-all">
-                            <div class="w-12 h-12 rounded-full bg-brand-medium text-brand-white flex items-center justify-center font-bold text-lg mb-2">
-                                QU
-                            </div>
-                            <h3 class="font-bold text-brand-dark text-lg uppercase tracking-wide">QUÍMICA</h3>
-                            <p class="text-xs text-gray-500 mt-1">Estadísticas / Notas</p>
-                        </div>
-
-                        <!-- ESTADÍSTICA -->
-                        <div class="bg-brand-bright/30 rounded-xl p-4 border border-brand-medium/30 flex flex-col items-center text-center hover:border-brand-medium transition-all">
-                            <div class="w-12 h-12 rounded-full bg-brand-black text-brand-white flex items-center justify-center font-bold text-lg mb-2">
-                                ES
-                            </div>
-                            <h3 class="font-bold text-brand-dark text-lg uppercase tracking-wide">ESTADÍSTICA</h3>
-                            <p class="text-xs text-gray-500 mt-1">Estadísticas / Notas</p>
-                        </div>
-                    </div>
+                    <p id="ranking-notas-mensaje" class="text-sm text-gray-500" aria-live="polite">
+                        Cargando ranking...
+                    </p>
+                    <div id="ranking-notas-lista" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2"></div>
                 </section>
 
             </main>
@@ -339,12 +314,47 @@
                         Mis Cursos
                     </h2>
                     <p class="text-sm text-gray-600 text-center mb-5">
-                        Cursos disponibles para registrar tareas y calificaciones.
+                        Crea tus cursos y luego úsalos para registrar tareas y calificaciones.
                     </p>
+                    <form id="form-curso" class="bg-white rounded-xl p-4 shadow-sm border border-brand-medium/30 mb-6" novalidate>
+                        <label for="nombre-curso" class="block text-sm font-semibold text-brand-dark mb-2">
+                            Crear curso
+                        </label>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input id="nombre-curso" name="nombre" type="text" maxlength="150"
+                                placeholder="Ej. Matemática"
+                                class="flex-1 px-3 py-2 border border-brand-medium/30 rounded-lg outline-none focus:ring-2 focus:ring-brand-medium"
+                                required>
+                            <button id="btn-crear-curso" type="submit"
+                                class="rounded-lg bg-brand-medium px-4 py-2 font-semibold text-brand-white hover:bg-brand-dark">
+                                Crear curso
+                            </button>
+                        </div>
+                        <p id="mensaje-cursos" class="mt-2 text-sm" aria-live="polite"></p>
+                    </form>
                     <div id="lista-cursos" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <p class="text-sm text-gray-500 text-center sm:col-span-2">
                             Cargando cursos...
                         </p>
+                    </div>
+                    <div id="detalle-curso" class="hidden mt-6 bg-white rounded-xl p-5 shadow-sm border border-brand-medium/30">
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <h3 id="detalle-curso-nombre" class="text-lg font-bold text-brand-dark"></h3>
+                            <button id="cerrar-detalle-curso" type="button"
+                                class="text-sm font-semibold text-brand-medium hover:text-brand-dark">
+                                Cerrar
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-semibold text-brand-dark mb-2">Calificaciones</h4>
+                                <div id="detalle-calificaciones" class="space-y-2"></div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-brand-dark mb-2">Tareas</h4>
+                                <div id="detalle-tareas" class="space-y-2"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -369,6 +379,7 @@
     <script src="/js/dashboard.js"></script>
     <script src="/js/calificaciones.js"></script>
     <script src="/js/promedios.js"></script>
+    <script src="/js/ranking.js"></script>
     <script src="/js/cursos.js"></script>
 </body>
 </html>

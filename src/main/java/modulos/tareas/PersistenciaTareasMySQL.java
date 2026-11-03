@@ -76,11 +76,10 @@ public class PersistenciaTareasMySQL {
 
         
         String sql =
-        "SELECT id, curso_id, nombre, fecha_entrega, "
-        + "completada, prioridad "
-        + "FROM tareas "
-        + "WHERE usuario_id = ? "
-        + "ORDER BY completada, fecha_entrega, id";
+        "INSERT INTO tareas "
+        + "(usuario_id, curso_id, nombre, "
+        + "fecha_entrega, completada, prioridad) "
+        + "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (
             Connection conexion = bd.abrir();
@@ -138,29 +137,7 @@ public class PersistenciaTareasMySQL {
 
             try (ResultSet resultado = consulta.executeQuery()) {
                 while (resultado.next()) {
-                    Tarea tarea = new Tarea(
-                            resultado.getString("nombre"),
-                            resultado.getDate("fecha_entrega")
-                                    .toLocalDate()
-                                    .toString()
-                    );
-
-                    tarea.setId(resultado.getLong("id"));
-                    tarea.setPrioridad(resultado.getString("prioridad"));
-
-                    // getLong devuelve 0 para SQL NULL.
-                    // wasNull permite conservar la ausencia del curso.
-                    long cursoId = resultado.getLong("curso_id");
-
-                    if (!resultado.wasNull()) {
-                        tarea.setCursoId(cursoId);
-                    }
-
-                    tarea.setCompletada(
-                            resultado.getBoolean("completada")
-                    );
-
-                    tareas.add(tarea);
+                    tareas.add(leerTarea(resultado));
                 }
             }
 
@@ -172,6 +149,69 @@ public class PersistenciaTareasMySQL {
                     error
             );
         }
+    }
+
+    /**
+     * Recupera las tareas de un curso específico del usuario.
+     */
+    public List<Tarea> consultarPorCurso(long usuarioId, long cursoId) {
+        validarId(usuarioId, "usuario");
+        validarId(cursoId, "curso");
+
+        String sql =
+                "SELECT id, curso_id, nombre, fecha_entrega, completada, prioridad "
+                        + "FROM tareas WHERE usuario_id = ? AND curso_id = ? "
+                        + "ORDER BY completada, fecha_entrega, id";
+
+        List<Tarea> tareas = new ArrayList<>();
+
+        try (
+            Connection conexion = bd.abrir();
+            PreparedStatement consulta = conexion.prepareStatement(sql)
+        ) {
+            consulta.setLong(1, usuarioId);
+            consulta.setLong(2, cursoId);
+
+            try (ResultSet resultado = consulta.executeQuery()) {
+                while (resultado.next()) {
+                    tareas.add(leerTarea(resultado));
+                }
+            }
+
+            return tareas;
+        } catch (SQLException error) {
+            throw new IllegalStateException(
+                    "No se pudieron consultar las tareas del curso.",
+                    error
+            );
+        }
+    }
+
+    private Tarea leerTarea(ResultSet resultado) throws SQLException {
+        Tarea tarea = new Tarea(
+                resultado.getString("nombre"),
+                resultado.getDate("fecha_entrega")
+                        .toLocalDate()
+                        .toString()
+        );
+
+        tarea.setId(resultado.getLong("id"));
+
+        String prioridad = resultado.getString("prioridad");
+        tarea.setPrioridad(
+                prioridad == null || prioridad.isBlank()
+                        ? "media"
+                        : prioridad
+        );
+
+        // getLong devuelve 0 para SQL NULL.
+        long cursoId = resultado.getLong("curso_id");
+        if (!resultado.wasNull()) {
+            tarea.setCursoId(cursoId);
+        }
+
+        tarea.setCompletada(resultado.getBoolean("completada"));
+        return tarea;
     }
 
     /**

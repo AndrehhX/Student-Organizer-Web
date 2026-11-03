@@ -140,3 +140,4 @@ formularioTarea.addEventListener('submit', async (evento) => {
 
 cargarTareas();
 cargarCursosParaTareas();
+document.addEventListener('cursos:actualizados', cargarCursosParaTareas);

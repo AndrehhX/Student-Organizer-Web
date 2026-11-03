@@ -155,6 +155,37 @@ button:disabled {
     opacity: 0.7;
 }
 
+.enlace-registro {
+    margin: 20px 0 0;
+    color: var(--suave);
+    text-align: center;
+}
+
+.boton-enlace {
+    margin: 0;
+    padding: 0;
+    color: var(--principal);
+    background: transparent;
+    font-weight: 700;
+}
+
+.boton-enlace:hover {
+    background: transparent;
+    transform: none;
+    text-decoration: underline;
+}
+
+#registro-form {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--borde);
+}
+
+#registro-form h2 {
+    margin: 0 0 4px;
+    font-size: 1.25rem;
+}
+
 .mensaje {
     min-height: 22px;
     margin: 8px 0 0;
