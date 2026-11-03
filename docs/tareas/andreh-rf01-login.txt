@@ -6,7 +6,7 @@ Qué debe hacer:
 - Mostrar campos para usuario y contraseña.
 - Revisar que no estén vacíos.
 - Enviar los datos a Java.
-- Leer los usuarios del CSV mediante PersistenciaDatos.
+- Consultar usuarios mediante RepositorioUsuariosMySQL.
 - Codificar la contraseña con Seguridad y compararla.
 - Mostrar acceso correcto o error.
 
@@ -18,5 +18,5 @@ Dónde trabajar:
 - src/main/java/servidor
 - src/main/resources/public
 
-Antes de abrir el Pull Request, prueba campos vacíos, usuario incorrecto, contraseña incorrecta y acceso con la cuenta demo.
+La implementación actual usa MySQL y permite crear cuentas desde el formulario. No se debe asumir que existe una cuenta demo.
 

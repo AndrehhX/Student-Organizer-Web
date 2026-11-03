@@ -1,52 +1,27 @@
-## RF03 - Registrar calificaciones
+# RF03 Registrar calificaciones
 
 ## Qué hace
 
-El sistema permite que el estudiante registre sus calificaciones académicas desde el apartado Notas del dashboard. La persona escribe el nombre del curso, la actividad, la nota obtenida, el punteo máximo y la fecha.
+Desde **Notas**, el estudiante selecciona un curso y registra el nombre de la actividad, la nota obtenida, la nota máxima y la fecha. La pantalla valida los campos y envía la solicitud a Java. Las calificaciones se guardan en MySQL y se muestran en una tabla.
 
-JavaScript valida que los campos estén completos y que las calificaciones sean correctas. Después envía los datos al servidor Java.
+## Recorrido
 
-El ControladorCalificaciones utiliza la clase Calificacion para validar los datos y el RepositorioCalificacionesMemoria para guardar temporalmente las notas. Cada calificación recibe un identificador único y queda asociada al usuario y al curso correspondiente.
+1. `calificaciones.js` carga los cursos disponibles y recoge el formulario.
+2. `ServidorWeb` recibe la solicitud en `/api/calificaciones`.
+3. `ControladorCalificaciones` crea y valida el objeto `Calificacion`.
+4. `RepositorioCalificacionesMySQL` guarda o consulta las notas, asociadas al usuario y al curso.
+5. La pantalla actualiza la tabla con la respuesta del servidor.
 
-Las calificaciones registradas se muestran en una tabla dentro del dashboard. Además, los nombres de los cursos pueden consultarse desde el apartado Cursos, evitando mostrar cursos duplicados.
+Las notas deben ser mayores o iguales a cero y no pueden superar la nota máxima. El curso debe pertenecer al usuario con sesión activa.
 
-## Recorrido sencillo
+## Relación con el promedio
 
-HTML muestra el formulario de Notas
-        ↓
-JavaScript recoge y valida los datos
-        ↓
-ServidorWeb recibe la petición
-        ↓
-ControladorCalificaciones registra la nota
-        ↓
-Calificacion valida los datos
-        ↓
-RepositorioCalificacionesMemoria guarda la nota
-        ↓
-La página muestra la calificación registrada
-        ↓
-El apartado Cursos muestra el curso utilizado
+`ControladorPromedios` consulta el mismo repositorio. Calcula los promedios por curso y el promedio general, que luego se muestra en el dashboard. El panel de ranking ordena los cursos del usuario por su promedio; no compara calificaciones de distintos estudiantes.
 
-## Datos de prueba
+## Pruebas
 
-Curso: Matemática
-Actividad: Parcial 1
-Nota obtenida: 85
-Punteo máximo: 100
-Fecha: 2026-10-15
-Casos probados
-Registro correcto de una calificación.
-Rechazo de notas negativas.
-Rechazo de notas superiores al punteo máximo.
-
+Las pruebas unitarias cubren calificaciones válidas, valores fuera de rango y cálculos relacionados. Las pruebas `PruebaCalificacionesMySQL` requieren una base disponible y pueden insertar registros; ejecútalas en una base de pruebas.
 
 ## Aporte de Fabricio
 
-Mi parte corresponde al RF03 – Registrar Calificaciones. Se desarrolló la clase Calificacion, el controlador, junto a su compatibilidad con el resto de archivos y el index
-
-También se preparó el formulario de Notas dentro del dashboard, se conectó con JavaScript y se integraron las rutas necesarias en ServidorWeb para registrar y consultar calificaciones.
-
-Se incorporó la posibilidad de escribir libremente el nombre del curso y se preparó su visualización en el apartado Cursos.
-
-La estructura queda disponible para que Luis conecte la base de datos MySQL y Manuel utilice las calificaciones registradas para calcular los promedios académicos.
+El RF03 corresponde al registro y consulta de calificaciones. La clase `Calificacion`, el controlador, la persistencia MySQL y el formulario de Notas participan en ese recorrido.

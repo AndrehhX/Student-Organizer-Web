@@ -1,13 +1,19 @@
 # Pruebas del Login
 
-Las pruebas principales se ejecutan con `PruebasLogin.java`.
+## Casos
 
 | Caso | Resultado esperado |
 |---|---|
-| Usuario y contraseña vacíos | Rechazar el acceso |
-| Usuario inexistente | Rechazar el acceso |
-| Contraseña incorrecta | Rechazar el acceso |
-| `demo` y `demo123` | Permitir el acceso |
-| CSV inexistente | Crear el archivo y la cuenta demo |
-| Guardar usuario nuevo | Agregarlo sin borrar los anteriores |
+| Usuario o contraseña vacíos | La pantalla pide completar los campos |
+| Usuario inexistente | Rechaza el acceso y no crea sesión |
+| Contraseña incorrecta | Rechaza el acceso y no crea sesión |
+| Credenciales válidas | Crea una sesión y abre el dashboard |
+| Registro con campos incompletos | No guarda la cuenta |
+| Registro con nombre repetido | Informa que ya existe una cuenta con ese nombre |
+| Cierre de sesión | Elimina la sesión y vuelve a la pantalla inicial |
 
+## Requisitos
+
+La autenticación actual consulta MySQL. Se necesita el servidor levantado, `DB_PASSWORD`, MySQL Connector/J y una cuenta registrada. No se crea automáticamente una cuenta demo desde CSV.
+
+La prueba de integración `PruebasLogin` requiere `DB_PASSWORD` y una base MySQL accesible. La prueba modifica la base; úsala solo en una instancia de desarrollo o de pruebas.

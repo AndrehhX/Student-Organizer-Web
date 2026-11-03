@@ -1,114 +1,68 @@
-# Student Organizer Web
+# Student Organizer
 
-Proyecto grupal para organizar estudiantes, tareas, calificaciones y promedios.
+Aplicación para que cada estudiante organice cursos, tareas y calificaciones desde una sola pantalla.
 
-## Estado actual
+La interfaz está hecha con HTML, CSS y JavaScript. Java 17 recibe las solicitudes y aplica las reglas del sistema. MySQL conserva usuarios, cursos, tareas y calificaciones.
 
-### Ya implementado
+## Qué está implementado
 
-- Inicio de sesión con usuario y contraseña.
-- Validación de credenciales con Java.
-- Usuarios guardados en `data/usuarios.csv`.
-- Contraseñas protegidas con hash antes de guardarse.
-- Dashboard principal responsive.
-- Registro, listado y finalización de tareas.
-- Cierre de sesión desde el botón `Log off`.
-- Navegación para Tareas, Notas y Cursos.
-- Registro y consulta de calificaciones mediante `/api/calificaciones`.
-- Cálculo y consulta del promedio mediante `/api/promedios`.
-- Registro y consulta de cursos mediante `/api/cursos`.
-- Modo MySQL integrado para Cursos, Tareas, Calificaciones y Promedios cuando se configura `DB_PASSWORD`.
-- Animaciones suaves en login y dashboard.
-- Respeto por la preferencia de reducir movimiento del dispositivo.
-- Estructura SQL y repositorios MySQL preparados para la integración de base de datos.
+- Crear una cuenta con usuario, contraseña y carné.
+- Iniciar y cerrar sesión. La sesión se identifica con una cookie y vence después de 30 minutos sin actividad.
+- Crear cursos y consultar sus calificaciones y tareas.
+- Registrar, listar y completar tareas, con fecha y prioridad.
+- Registrar y consultar calificaciones por curso.
+- Calcular el promedio de cada curso y el promedio general.
+- Mostrar los cinco cursos con promedio más alto del estudiante. Este panel ordena los cursos de una cuenta; no compara estudiantes entre sí.
 
-### Pendiente
+El servidor actual requiere MySQL. No tiene un modo de respaldo con CSV. Las pruebas específicas de base de datos agregan filas, así que deben ejecutarse contra una base de pruebas o después de acordar cómo limpiar sus datos.
 
-- Completar las pruebas de integración contra la base de datos real.
-- Revisar la eliminación definitiva de `prioridad` en las partes antiguas de Tareas, si el requisito final ya no la utilizará.
+## Requisitos
 
-Si `DB_PASSWORD` no está configurada, el proyecto conserva el modo local de respaldo para poder probar el login y las tareas sin Docker. Con MySQL configurado, el servidor utiliza los repositorios de Cursos, Tareas, Calificaciones y Promedios.
+- JDK 17.
+- MySQL 8, ya sea en Docker o en otro equipo accesible.
+- MySQL Connector/J en `lib/`.
+- La base `student_organizer` y sus tablas creadas con los scripts de `sql/`.
+- Variables de entorno `DB_PASSWORD` y, si MySQL está en otra máquina, `DB_HOST`.
 
-## Requisitos del equipo
+Por defecto, Java intenta conectar a `127.0.0.1:3307`. En otra computadora, configura `DB_HOST` con la dirección del equipo que aloja MySQL. La contraseña se configura localmente y no se guarda en este repositorio.
 
-| Requisito | Responsable | Carpeta principal |
-|---|---|---|
-| RF01 - Iniciar sesión | Andreh | `src/main/java/controlador`, `src/main/java/modelo`, `src/main/java/servidor` |
-| RF03 - Registrar calificaciones | Fabricio | `src/main/java/modulos/calificaciones` |
-| RF12 - Calcular promedio | Manuel | `src/main/java/modulos/promedio` |
-| RF07 - Registrar tareas | Luis | `src/main/java/modulos/tareas` |
+## Ejecutar
 
-## Cómo ejecutar el proyecto
-
-Desde PowerShell, dentro de la carpeta del proyecto:
+Desde PowerShell, en la carpeta del proyecto:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\ejecutar.ps1
 ```
 
-Después abre `http://localhost:8080` en el navegador.
+Después abre <http://localhost:8080>. Si no existe una cuenta preparada para la demostración, selecciona **Crear cuenta** en la pantalla inicial y registra una.
 
-Cuenta de demostración:
-
-- Usuario: `demo`
-- Contraseña: `demo123`
-
-## Verificaciones
-
-Compilar el proyecto:
+Para compilar sin iniciar el servidor:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\compilar.ps1
 ```
 
-Probar el login:
+Para revisar el login con una cuenta ya registrada, ejecuta `scripts\verificar-login.ps1`. El script solicita los datos de forma interactiva y comprueba una contraseña válida y otra incorrecta. Necesita MySQL y Connector/J disponibles.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\verificar-login.ps1
-```
+## Equipo y recorrido de la presentación
 
-Revisar la conexión del dashboard:
+| Integrante | Requisito principal | Enfoque para explicar |
+|---|---|---|
+| Andreh | RF01 - Login | Formulario, validación de credenciales y sesión |
+| Fabricio | RF03 - Calificaciones | Registro y consulta de notas asociadas a un curso |
+| Manuel | RF12 - Promedio | Cálculo por curso y promedio general |
+| Luis | RF07 - Tareas | Registro, consulta y finalización de tareas |
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\verificar-dashboard.ps1
-```
+El guion para exponer está en [`documentación/guion-presentacion.pdf`](documentación/guion-presentacion.pdf), con una versión editable en [`documentación/guion-presentacion.md`](documentación/guion-presentacion.md).
 
-Las pruebas Java principales son:
-
-- `PruebasLogin`
-- `PruebasTareas`
-- `PruebasCalificaciones`
-- `PruebasPromedios`
-- `PruebasServidorTareas`
-- `PruebasServidorDashboard`
-- `PruebasServidorCursos`
-
-Estas pruebas pasan en la versión actual. La prueba contra MySQL/Docker queda pendiente de ejecutarse en el equipo donde Luis tiene levantada la base de datos.
-
-## Cómo trabajamos
-
-1. Cada persona crea su propia rama desde `main`.
-2. Cada persona trabaja principalmente en su carpeta.
-3. Antes de mezclar, se prueba el cambio y se abre un Pull Request.
-4. No se sube directamente a `main` sin revisar el cambio.
-5. Si hay que tocar un archivo compartido, primero se avisa en el grupo.
-6. Cada integrante registra sus horas reales en `docs/horas-contribuciones.md`.
-
-## Estructura principal
+## Organización del repositorio
 
 ```text
-src/main/java/              lógica Java y servidor
+src/main/java/              servidor y lógica Java
 src/main/resources/public/  interfaz HTML, CSS y JavaScript
-src/main/java/modulos/      espacios de trabajo por requisito
-data/                       archivos de persistencia local
-sql/                        esquema y scripts de base de datos
-docs/                       guías, horas, pruebas y planificación
+src/main/java/modulos/      módulos de tareas, notas y promedios
+sql/                        esquema y cambios de la base
+docs/                       requisitos, pruebas y contribuciones
+documentación/              guías del equipo y guion de exposición
 scripts/                    comandos para compilar, ejecutar y verificar
 ```
-
-
-
-
-## Entrevistas tercera entrega
-
-https://youtu.be/9yRYS6GIyck?si=1H5ffpH4WgA-2pg7
