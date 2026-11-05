@@ -65,6 +65,7 @@ Las pruebas de integración con MySQL pueden agregar filas y dejarlas en la base
 - [Tareas, RF07](docs/RF07_Tareas.md).
 - [Promedios, RF12](docs/tareas/manuel-rf12-promedio.txt).
 - [Base de datos](docs/DB.md).
+- [Arquitectura y UML en Mermaid](docs/diagramas/arquitectura-y-uml.md).
 - [Horas y contribuciones](docs/horas-contribuciones.md).
 
 ## Módulos del equipo
