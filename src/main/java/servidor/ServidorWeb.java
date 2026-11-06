@@ -266,8 +266,7 @@ public class ServidorWeb {
             return;
         }
 
-        // Identificacion temporal para pruebas locales.
-        // Pendiente: sesiones independientes por navegador.
+        // El usuario se obtiene del token de la sesion de este navegador.
         Usuario usuario = controladorLogin.getUsuarioActual(obtenerToken(intercambio));
 
         if (usuario == null) {

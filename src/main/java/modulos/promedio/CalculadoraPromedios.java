@@ -10,7 +10,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-
+/**
+ * RF12 - Calcular promedio.
+ *
+ * Contiene unicamente la logica matematica de los promedios.
+ *
+ * Reglas:
+ * - Promedio de un curso = (SUMA notaObtenida / SUMA notaMaxima) x 100.
+ *   El punteo maximo de cada actividad funciona como su peso.
+ * - Promedio general = promedio simple de los promedios por curso.
+ * - Escala 0-100, 2 decimales, redondeo HALF_UP.
+ *
+ * No consulta repositorios, no usa MySQL, no depende de HTML
+ * ni JavaScript y no modifica las calificaciones recibidas.
+ */
 public class CalculadoraPromedios {
 
     // CONFIGURACION DEL CALCULO
