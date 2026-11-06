@@ -24,6 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
         enlaceTareas.addEventListener('click', cargarPromedio);
     }
 
+    // Al registrar una calificacion se recalcula el promedio sin
+    // recargar la pagina (mismo patron que 'cursos:actualizados').
+    document.addEventListener('calificaciones:actualizadas', cargarPromedio);
+
 
     // CONSULTAR PROMEDIO
 
