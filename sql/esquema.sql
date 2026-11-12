@@ -14,8 +14,10 @@ USE student_organizer;
 CREATE TABLE IF NOT EXISTS usuarios (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     nombre_usuario VARCHAR(100) NOT NULL UNIQUE,
+    correo VARCHAR(254) NULL,
     contrasena_hash CHAR(64) NOT NULL,
-    carne VARCHAR(30) NOT NULL
+    carne VARCHAR(30) NOT NULL,
+    CONSTRAINT uq_usuarios_correo UNIQUE (correo)
 );
 
 -- =====================================================

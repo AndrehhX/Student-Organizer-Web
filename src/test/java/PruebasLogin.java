@@ -26,9 +26,11 @@ public class PruebasLogin {
                 new RepositorioUsuariosMySQL(bd);
 
         String nombre = "prueba_login_" + System.currentTimeMillis();
+        String correo = nombre + "@example.test";
+        String clavePrueba = "ClavePrueba-2026!";
 
         long id = repositorio.guardar(
-                new Usuario(nombre, "demo123", "LOGIN")
+                new Usuario(nombre, correo, clavePrueba, "LOGIN")
         );
 
         comprobar(id > 0, "Debe guardar el usuario.");
@@ -47,7 +49,7 @@ public class PruebasLogin {
         );
 
         Optional<String> token =
-                controlador.iniciarSesion(nombre, "demo123");
+                controlador.iniciarSesion(nombre, clavePrueba);
 
         comprobar(
                 token.isPresent(),
@@ -59,7 +61,16 @@ public class PruebasLogin {
                 "Debe encontrar al usuario usando el token."
         );
 
+        Optional<String> tokenCorreo =
+                controlador.iniciarSesion(correo, clavePrueba);
+
+        comprobar(
+                tokenCorreo.isPresent(),
+                "El usuario debe iniciar sesion con su correo."
+        );
+
         controlador.cerrarSesion(token.get());
+        controlador.cerrarSesion(tokenCorreo.get());
 
         comprobar(
                 controlador.getUsuarioActual(token.get()) == null,

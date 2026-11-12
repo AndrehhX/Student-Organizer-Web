@@ -27,10 +27,11 @@ public class PruebaUsuariosMySQL {
                 new RepositorioUsuariosMySQL(bd);
 
         String nombre = "prueba_" + System.currentTimeMillis();
+        String correo = nombre + "@example.test";
 
         // 1. Guardar
         long id = repositorio.guardar(
-                new Usuario(nombre, "Prueba123", "PRUEBA")
+                new Usuario(nombre, correo, "Prueba123", "PRUEBA")
         );
         comprobar(id > 0, "Debe devolver el ID generado.");
         System.out.println("Usuario guardado. ID: " + id);
@@ -40,6 +41,12 @@ public class PruebaUsuariosMySQL {
                 repositorio.autenticar(nombre, "Prueba123");
         comprobar(correcto.isPresent() && correcto.get() == id,
                 "Con la contraseña correcta debe devolver el ID.");
+
+        Optional<Long> correctoConCorreo =
+                repositorio.autenticar(correo, "Prueba123");
+        comprobar(correctoConCorreo.isPresent()
+                        && correctoConCorreo.get() == id,
+                "Con el correo y la contraseña correctos debe devolver el ID.");
 
         // 3. Contraseña incorrecta
         comprobar(repositorio.autenticar(nombre, "otra").isEmpty(),
@@ -69,7 +76,7 @@ public class PruebaUsuariosMySQL {
         // 7. Nombre duplicado
         try {
             repositorio.guardar(
-                    new Usuario(nombre, "Prueba123", "PRUEBA")
+                    new Usuario(nombre, correo + ".otro", "Prueba123", "PRUEBA")
             );
             throw new IllegalStateException(
                     "FALLÓ: debió rechazar el nombre repetido.");

@@ -1,63 +1,29 @@
-# Integración de MySQL
+# Integración con MySQL
 
-## Qué se agregó
+## Qué usa el servidor
 
-El PR de Luis agregó `ServiciosMySQL`, una clase que centraliza la configuración de la conexión y construye los componentes que trabajan con MySQL:
+`Main` obtiene la configuración de `ServiciosMySQL` y pasa esos servicios a `ServidorWeb`. Los repositorios guardan y consultan usuarios, cursos, tareas y calificaciones. `ControladorPromedios` reutiliza las calificaciones del usuario para calcular resultados.
 
-- usuarios;
-- cursos;
-- tareas;
-- calificaciones;
-- promedios.
+La aplicación requiere una base MySQL. No cambia automáticamente a CSV ni a un repositorio temporal si faltan credenciales.
 
-El repositorio también contiene la tabla `cursos` y la tabla `calificaciones`, junto con sus relaciones hacia usuarios y cursos.
+## Rutas principales
 
-Además, `ServidorWeb` ya puede recibir `ServiciosMySQL` y utilizar esos repositorios desde las rutas web. La selección se activa desde `Main` cuando existe `DB_PASSWORD`.
+- `POST /api/usuarios`: registra una cuenta.
+- `POST /api/login`: valida las credenciales y crea una sesión.
+- `POST /api/logout`: cierra la sesión.
+- `GET` y `POST /api/cursos`: consultan y registran cursos del usuario.
+- `GET` y `POST /api/tareas`: consultan y registran tareas.
+- `POST /api/tareas/completar`: marca una tarea como completada.
+- `GET` y `POST /api/calificaciones`: consultan y registran notas.
+- `GET /api/promedios`: devuelve los promedios del usuario.
+- `GET /api/cursos/detalle?cursoId=...`: consulta tareas y notas del curso.
 
-## Cómo funciona la estructura
+## Configuración
 
-1. `ConexionBD` representa la conexión a MySQL.
-2. `ServiciosMySQL` recibe esa conexión y crea los repositorios.
-3. `RepositorioCursosMySQL` puede guardar, listar y buscar cursos por usuario.
-4. `RepositorioCalificacionesMySQL` guarda y consulta las calificaciones.
-5. `ControladorPromedios` reutiliza el repositorio de calificaciones para calcular los promedios.
-6. `ServidorWeb` conecta esos servicios con `/api/cursos`, `/api/tareas`, `/api/calificaciones` y `/api/promedios`.
+Define `DB_PASSWORD` localmente y, si la base está en otro equipo, define `DB_HOST` con su dirección accesible. El puerto usado es `3307`; la base se llama `student_organizer` y la cuenta de conexión es `organizer_app`. Se necesita MySQL Connector/J en `lib/` para iniciar el servidor.
 
-## Rutas integradas
+## Qué se verificó en la revisión del PR
 
-- `GET /api/cursos`: lista los cursos del usuario autenticado.
-- `POST /api/cursos`: registra un curso con el campo `nombre`.
-- `GET /api/tareas`: lista las tareas desde MySQL en modo MySQL.
-- `POST /api/tareas`: registra una tarea usando `nombre`, `fechaEntrega` y `cursoId`.
-- `POST /api/tareas/completar`: marca como completada una tarea usando su id.
-- `/api/calificaciones` y `/api/promedios`: utilizan el repositorio MySQL correspondiente en modo MySQL.
+Se compiló el proyecto y pasaron las pruebas locales de tareas, calificaciones, promedios y rutas del servidor que no requieren una base MySQL. También se revisó la sintaxis de los scripts JavaScript.
 
-## Qué se verificó
-
-En la versión actual se verificó localmente:
-
-- compilación de las clases Java;
-- login correcto e incorrecto;
-- tareas;
-- calificaciones en memoria;
-- cálculo de promedios;
-- servidor de tareas;
-- servidor del dashboard y cierre de sesión;
-- respuesta controlada de `/api/cursos` cuando MySQL no está configurado.
-
-Todas esas pruebas locales pasan.
-
-## Pendiente de verificación
-
-La integración de código ya está conectada, pero todavía debe hacerse una prueba con Docker/MySQL para confirmar en el entorno real que los datos se guardan y se recuperan correctamente. En este equipo no se pudo ejecutar esa prueba porque el comando de Docker no está disponible.
-
-El login web continúa usando el archivo CSV como fuente de autenticación. Para trabajar con los módulos MySQL, el usuario debe existir también en la tabla `usuarios`, porque los repositorios usan su id de base de datos.
-
-## Variables esperadas para MySQL
-
-`ServiciosMySQL.desdeEntorno()` espera:
-
-- `DB_PASSWORD`: contraseña obligatoria de la base;
-- `DB_HOST`: host opcional, por defecto `127.0.0.1`.
-
-La conexión usa el puerto `3307`, la base `student_organizer` y el usuario `organizer_app`.
+Las pruebas que escriben en MySQL no se ejecutaron contra la base compartida para evitar agregar datos de prueba. Deben correrse con Docker/MySQL y credenciales de desarrollo; varias dejan filas creadas, así que conviene usar una base de pruebas.

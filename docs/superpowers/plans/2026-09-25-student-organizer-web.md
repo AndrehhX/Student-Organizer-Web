@@ -1,5 +1,7 @@
 # Student Organizer Web Implementation Plan
 
+> **Plan histórico:** describe la primera versión con CSV. El proyecto actual ya usa MySQL; consulta `README.md`, `docs/DB.md` y `documentación/integracion-mysql.md` para las instrucciones vigentes.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Crear una base web sencilla y ordenada donde la interfaz use HTML, CSS y JavaScript, mientras la lógica del Login continúe en Java.

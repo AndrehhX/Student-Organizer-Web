@@ -1,114 +1,105 @@
-# Student Organizer Web
+# Student Organizer
 
-Proyecto grupal para organizar estudiantes, tareas, calificaciones y promedios.
+Aplicación para organizar cursos, tareas y calificaciones. La interfaz está hecha con HTML, CSS y JavaScript; Java aplica las reglas del sistema y MySQL guarda la información.
 
-## Estado actual
+## Funciones disponibles
 
-### Ya implementado
+- Crear cuenta, iniciar sesión con usuario o correo y cerrar sesión.
+- Crear cursos y consultar sus tareas y calificaciones.
+- Registrar, consultar y completar tareas con fecha y prioridad.
+- Registrar calificaciones por curso y actividad.
+- Calcular promedios por curso y un promedio general.
+- Ver los cinco cursos con mejor promedio de la cuenta actual. El ranking no compara estudiantes.
 
-- Inicio de sesión con usuario y contraseña.
-- Validación de credenciales con Java.
-- Usuarios guardados en `data/usuarios.csv`.
-- Contraseñas protegidas con hash antes de guardarse.
-- Dashboard principal responsive.
-- Registro, listado y finalización de tareas.
-- Cierre de sesión desde el botón `Log off`.
-- Navegación para Tareas, Notas y Cursos.
-- Registro y consulta de calificaciones mediante `/api/calificaciones`.
-- Cálculo y consulta del promedio mediante `/api/promedios`.
-- Registro y consulta de cursos mediante `/api/cursos`.
-- Modo MySQL integrado para Cursos, Tareas, Calificaciones y Promedios cuando se configura `DB_PASSWORD`.
-- Animaciones suaves en login y dashboard.
-- Respeto por la preferencia de reducir movimiento del dispositivo.
-- Estructura SQL y repositorios MySQL preparados para la integración de base de datos.
+La sesión vence después de 30 minutos sin actividad. La aplicación requiere MySQL y no tiene respaldo automático con CSV.
 
-### Pendiente
+## Cómo se conectan las partes
 
-- Completar las pruebas de integración contra la base de datos real.
-- Revisar la eliminación definitiva de `prioridad` en las partes antiguas de Tareas, si el requisito final ya no la utilizará.
+```text
+Navegador (HTML, CSS y JavaScript)
+                 ↓
+       Servidor y lógica en Java
+                 ↓
+             Base MySQL
+```
 
-Si `DB_PASSWORD` no está configurada, el proyecto conserva el modo local de respaldo para poder probar el login y las tareas sin Docker. Con MySQL configurado, el servidor utiliza los repositorios de Cursos, Tareas, Calificaciones y Promedios.
+El navegador recoge las acciones del usuario, Java valida y coordina los módulos, y MySQL conserva usuarios, cursos, tareas y calificaciones.
 
-## Requisitos del equipo
+## Requisitos
 
-| Requisito | Responsable | Carpeta principal |
-|---|---|---|
-| RF01 - Iniciar sesión | Andreh | `src/main/java/controlador`, `src/main/java/modelo`, `src/main/java/servidor` |
-| RF03 - Registrar calificaciones | Fabricio | `src/main/java/modulos/calificaciones` |
-| RF12 - Calcular promedio | Manuel | `src/main/java/modulos/promedio` |
-| RF07 - Registrar tareas | Luis | `src/main/java/modulos/tareas` |
+- JDK 17.
+- MySQL 8 disponible en esta computadora o en otra accesible por red.
+- MySQL Connector/J dentro de `lib/`.
+- Base `student_organizer` y tablas preparadas con los archivos de `sql/`.
+- Contraseña local de la cuenta MySQL `organizer_app` en `DB_PASSWORD`.
 
-## Cómo ejecutar el proyecto
+La conexión usa el puerto `3307` y `DB_HOST` vale `127.0.0.1` si no se configura. Si la base está en otra computadora, asigna a `DB_HOST` la dirección de ese equipo. No guardes contraseñas en el repositorio.
 
-Desde PowerShell, dentro de la carpeta del proyecto:
+## Ejecutar
+
+Desde PowerShell, en la carpeta del proyecto:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\ejecutar.ps1
 ```
 
-Después abre `http://localhost:8080` en el navegador.
+El script pide la contraseña de MySQL de forma interactiva cuando `DB_PASSWORD` no está configurada. Después abre <http://localhost:8080>. Si no hay una cuenta preparada, elige **Crear cuenta**.
 
-Cuenta de demostración:
+El registro solicita usuario, correo, contraseña y carné. El correo también sirve para iniciar sesión; el proyecto no envía mensajes ni códigos de verificación.
 
-- Usuario: `demo`
-- Contraseña: `demo123`
+## Cuentas ficticias para pruebas
 
-## Verificaciones
+Para una base que ya existe, ejecuta `sql/005_correo_usuarios.sql` desde DBeaver para agregar el correo sin borrar cuentas actuales. En una instalación nueva, `sql/esquema.sql` ya crea esa columna.
 
-Compilar el proyecto:
+Luego puedes cargar tres cuentas inventadas ejecutando `sql/datos_prueba.sql`. El script se puede repetir y no se ejecuta al iniciar la aplicación. Úsalo solo en desarrollo o pruebas:
+
+| Usuario | Correo | Contraseña |
+|---|---|---|
+| `ana.mendez` | `ana.mendez@example.test` | `Ana-Organiza-2026!` |
+| `carlos.ruiz` | `carlos.ruiz@example.test` | `Carlos-Tareas-2026!` |
+| `sofia.lopez` | `sofia.lopez@example.test` | `Sofia-Cursos-2026!` |
+
+Los correos usan el dominio reservado `.test`; son ficticios y no reciben mensajes.
+
+Para compilar sin iniciar el servidor:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\compilar.ps1
 ```
 
-Probar el login:
+Para comprobar el inicio de sesión con una cuenta existente, ejecuta `scripts\verificar-login.ps1`. Solicita las credenciales localmente y verifica que una contraseña válida se acepte y una incorrecta se rechace. Requiere MySQL y Connector/J.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\verificar-login.ps1
-```
+Las pruebas de integración con MySQL pueden agregar filas y dejarlas en la base. Ejecútalas en una base de pruebas o acuerda con el equipo cómo limpiar esos datos.
 
-Revisar la conexión del dashboard:
+## Documentación del equipo
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\verificar-dashboard.ps1
-```
+- [Guía de integración MySQL](documentación/integracion-mysql.md): conexión, rutas y verificación.
+- [Guion de presentación en PDF](documentación/guion-presentacion.pdf).
+- [Guion editable](documentación/guion-presentacion.md).
+- [Inicio de sesión, RF01](docs/RF01_Login.md).
+- [Calificaciones, RF03](docs/RF03_Notas.md).
+- [Tareas, RF07](docs/RF07_Tareas.md).
+- [Promedios, RF12](docs/tareas/manuel-rf12-promedio.txt).
+- [Base de datos](docs/DB.md).
+- [Arquitectura y UML en Mermaid](docs/diagramas/arquitectura-y-uml.md).
+- [Horas y contribuciones](docs/horas-contribuciones.md).
 
-Las pruebas Java principales son:
+## Módulos del equipo
 
-- `PruebasLogin`
-- `PruebasTareas`
-- `PruebasCalificaciones`
-- `PruebasPromedios`
-- `PruebasServidorTareas`
-- `PruebasServidorDashboard`
-- `PruebasServidorCursos`
+| Integrante | Módulo | Enfoque |
+|---|---|---|
+| Andreh | RF01 · Inicio de sesión | Formulario, autenticación y sesión |
+| Fabricio | RF03 · Calificaciones | Registro y consulta de notas por curso |
+| Manuel | RF12 · Promedios | Cálculo por curso y promedio general |
+| Luis | RF07 · Tareas | Registro, consulta y finalización de tareas |
 
-Estas pruebas pasan en la versión actual. La prueba contra MySQL/Docker queda pendiente de ejecutarse en el equipo donde Luis tiene levantada la base de datos.
-
-## Cómo trabajamos
-
-1. Cada persona crea su propia rama desde `main`.
-2. Cada persona trabaja principalmente en su carpeta.
-3. Antes de mezclar, se prueba el cambio y se abre un Pull Request.
-4. No se sube directamente a `main` sin revisar el cambio.
-5. Si hay que tocar un archivo compartido, primero se avisa en el grupo.
-6. Cada integrante registra sus horas reales en `docs/horas-contribuciones.md`.
-
-## Estructura principal
+## Carpetas principales
 
 ```text
-src/main/java/              lógica Java y servidor
-src/main/resources/public/  interfaz HTML, CSS y JavaScript
-src/main/java/modulos/      espacios de trabajo por requisito
-data/                       archivos de persistencia local
-sql/                        esquema y scripts de base de datos
-docs/                       guías, horas, pruebas y planificación
-scripts/                    comandos para compilar, ejecutar y verificar
+src/main/java/              servidor y lógica Java
+src/main/resources/public/  interfaz web
+sql/                        esquema y scripts MySQL
+docs/                       requisitos, pruebas y contribuciones
+documentación/              integración y guion de exposición
+scripts/                    compilación, ejecución y verificación
 ```
-
-
-
-
-## Entrevistas tercera entrega
-
-https://youtu.be/9yRYS6GIyck?si=1H5ffpH4WgA-2pg7

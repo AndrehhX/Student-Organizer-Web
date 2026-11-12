@@ -1,27 +1,14 @@
 # Pruebas de tareas
 
-Las pruebas de esta se ejecutan en `src/test/java/PruebasTareas.java` . usan un archivo temporal y se eliminan una vez terminadas.
+## Prueba del modelo
 
-| Caso | Resultado Esperado | Resultado |
-| --- | --- | --- |
-| Iniciar sin tareas guardadas | Obtener una lista vacia | paso |
-| Registrar una tarea con nombre, fecha y prioridad | Crear el CSV y conservar la tarea | paso |
-| Crear otro controlador con el mismo CSV | Recuperar la tarea y su nombre | paso |
-| Registrar una tarea sin nombre | Rechazar | paso |
-| Registrar una tarea sin fecha | Rechazar | paso |
-| Registrar una tarea sin prioridad | Rechazar | paso |
-| Crear directamente una `Tarea` sin nombre | Rechazar | paso |
-| Intentar registrar datos incompletos | no modificar CSV | paso |
-| Marcar una tarea como completada | Guardar su estado y quitarla de pendientes | paso |
+`src/test/java/PruebasTareas.java` revisa que `Tarea` conserve nombre, curso, fecha y prioridad, y que cambie de pendiente a completada. Esta prueba no conecta con MySQL ni verifica que los datos queden guardados.
 
-Esta prueba no necesita MySQL ni el driver JDBC.
-
-Comprueba el registro y recuperación de tareas, el rechazo de campos incompletos y la persistencia del estado completado. 
-
-### Ejecutar
+Con las clases principales ya compiladas, se puede ejecutar así desde PowerShell:
 
 ```powershell
-& (Join-Path (Split-Path -Parent (Get-Command javac).Source) "java.exe") -cp "out" PruebasTareas
+javac -encoding UTF-8 -cp "out;lib/*" -d out-test src/test/java/PruebasTareas.java
+java -cp "out-test;out;lib/*" PruebasTareas
 ```
 
 Resultado esperado:
@@ -29,3 +16,7 @@ Resultado esperado:
 ```text
 PruebasTareas: todas las pruebas pasaron.
 ```
+
+## Prueba con MySQL
+
+`src/test/java/PruebaTareasMySQL.java` verifica el guardado y la consulta real. Requiere MySQL, Connector/J y `DB_PASSWORD`; agrega datos y no los elimina al terminar. Ejecútala únicamente en una base de pruebas o coordina la limpieza con el equipo.

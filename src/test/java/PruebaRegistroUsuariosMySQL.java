@@ -43,6 +43,7 @@ public class PruebaRegistroUsuariosMySQL {
         );
 
         String nombre = "registro_" + System.currentTimeMillis();
+        String correo = nombre + "@example.test";
 
         try {
             servidor.iniciar();
@@ -60,7 +61,24 @@ public class PruebaRegistroUsuariosMySQL {
                     "Debe rechazar un registro incompleto."
             );
 
+            String correoInvalido = "usuario-sin-correo";
+            HttpResponse<String> invalido = enviar(
+                    cliente,
+                    puerto,
+                    "/api/usuarios",
+                    "usuario=" + codificar(nombre)
+                            + "&correo=" + codificar(correoInvalido)
+                            + "&contrasena=" + codificar("Registro123")
+                            + "&carne=" + codificar("REGISTRO")
+            );
+
+            comprobar(
+                    invalido.statusCode() == 400,
+                    "Debe rechazar un correo invalido."
+            );
+
             String datos = "usuario=" + codificar(nombre)
+                    + "&correo=" + codificar(correo)
                     + "&contrasena=" + codificar("Registro123")
                     + "&carne=" + codificar("REGISTRO");
 
@@ -81,7 +99,7 @@ public class PruebaRegistroUsuariosMySQL {
                     cliente,
                     puerto,
                     "/api/login",
-                    "usuario=" + codificar(nombre)
+                    "usuario=" + codificar(correo)
                             + "&contrasena="
                             + codificar("Registro123")
             );
@@ -94,6 +112,22 @@ public class PruebaRegistroUsuariosMySQL {
                                     .firstValue("Set-Cookie")
                                     .isPresent(),
                     "El usuario registrado debe poder iniciar sesión."
+            );
+
+            String correoRepetido = "usuario=" + codificar(nombre + "_otro")
+                    + "&correo=" + codificar(correo)
+                    + "&contrasena=" + codificar("Registro123")
+                    + "&carne=" + codificar("REGISTRO2");
+            HttpResponse<String> repetidoCorreo = enviar(
+                    cliente,
+                    puerto,
+                    "/api/usuarios",
+                    correoRepetido
+            );
+
+            comprobar(
+                    repetidoCorreo.statusCode() == 409,
+                    "Debe rechazar un correo ya registrado."
             );
 
             HttpResponse<String> repetido = enviar(

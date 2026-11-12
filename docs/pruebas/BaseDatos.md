@@ -1,102 +1,49 @@
-# Base de datos y pruebas 
-Aqui se documenta la instalacion de la base de datos y sus pruebas realizadas
+# Preparar y probar MySQL
 
-## Instalacion 
-### Dbeaver community
-Descargar e instalar:
-https://dbeaver.io/download/
-DBeaver permite ejecutar SQL y consultar los registros de MySQL.
+Estas instrucciones son para el equipo que aloja la base y para quienes se conectan desde otra computadora.
 
-### MySQL Connector/J
-Descargar:
-https://dev.mysql.com/downloads/connector/j/
+## Requisitos
 
-1. Seleccionar `Platform Independent`.
-2. Descargar el ZIP.
-3. Extraer su contenido.
-4. Localizar el archivo `.jar`.
-5. Copiarlo a la carpeta `lib` del proyecto.
-6. Renombrarlo como `mysql-connector-j.jar`.
+- Docker Desktop en el equipo que aloja MySQL.
+- MySQL Connector/J en la carpeta `lib` del proyecto Java.
+- DBeaver es opcional; sirve para revisar las tablas y ejecutar consultas.
 
-### Docker desktop
+## Iniciar el contenedor existente
 
-Solo lo necesita la computadora que aloja la base de datos:
-https://docs.docker.com/desktop/setup/install/windows-install/
-Quienes se conecten al servidor compartido no necesitan crear otro contenedor MySQL.
-
-## configuracion MySQL
-Credenciales de desarrollo:
-
-| Parámetro | Valor |
-|---|---|
-| Base de datos | `student_organizer` |
-| Usuario | `organizer_app` |
-| Contraseña | `OrganizerLocal2026` |
-| Puerto de acceso desde Windows | `3307` |
-| Host desde la computadora que aloja MySQL | `127.0.0.1` |
-| Contenedor | `student-mysql-windows` |
-
-Esta cuenta permite conectarse al motor MySQL.
-
-### Iniciar el contenedor existente
-
-En la computadora que aloja MySQL, abrir Docker Desktop y ejecutar: (luis)
+En la computadora que aloja la base, abre Docker Desktop y ejecuta:
 
 ```powershell
 docker start student-mysql-windows
 docker ps
 ```
 
-No es necesario crear otro contenedor cada vez que se trabaja.
+Los demás equipos no necesitan iniciar otro contenedor. Deben poder alcanzar el equipo anfitrión por la red.
 
-## Pruebas realizadas
-ejecutar el script completo de pruebas.sql en DBeaver 
+## Configurar Java
 
-Resultado esperado:
-
-- Un usuario nuevo con carné `PRUEBA`.
-- Una tarea asociada a ese usuario.
-- Una fila en la consulta final.
-
-Cada ejecución agrega un usuario y una tarea nuevos.
-
-### Ejecutar
-
-Este es el comando comprobado en el entorno de desarrollo:
+En la computadora que ejecuta el servidor, define la contraseña en la sesión local de PowerShell. No la pegues en este documento ni la subas a GitHub:
 
 ```powershell
-$env:DB_PASSWORD = "OrganizerLocal2026"
-& (Join-Path (Split-Path -Parent (Get-Command javac).Source) "java.exe") -cp "out;lib/mysql-connector-j.jar" PruebaTareasMySQL
+$clave = Read-Host "Contraseña MySQL de organizer_app" -AsSecureString
+$env:DB_PASSWORD = [System.Net.NetworkCredential]::new("", $clave).Password
+$clave.Dispose()
+$env:DB_HOST = "127.0.0.1"
+powershell -ExecutionPolicy Bypass -File scripts\ejecutar.ps1
 ```
 
-Resultado esperado:
+Si MySQL está en otra computadora, reemplaza `127.0.0.1` por la dirección de esa computadora. La conexión usa el puerto `3307`, la base `student_organizer` y el usuario `organizer_app`.
 
-```text
-Tarea guardada en MySQL. ID: ...
-Usuario propietario. ID: ...
-```
+## Esquema y pruebas
 
-La prueba busca el usuario más reciente con carné `PRUEBA` e inserta una tarea asociada a él.
+Aplica los scripts de `sql/` en el orden indicado por el equipo. `sql/pruebas.sql` inserta un usuario, un curso y una tarea de ejemplo. Las pruebas Java que terminan en `MySQL` también insertan datos y los dejan en la base; ejecútalas en una base de pruebas o coordina su limpieza antes de volver a probar.
 
-Cada ejecución agrega otra tarea.
-
-### Comprobar los registros
-
-En DBeaver:
+Para consultar lo más reciente desde DBeaver:
 
 ```sql
-SELECT *
+SELECT id, nombre, fecha_entrega, completada
 FROM student_organizer.tareas
 ORDER BY id DESC;
 ```
-
-Debe aparecer la tarea:
-
-```text
-Tarea creada desde Java
-```
-
-Para consultar usuarios:
 
 ```sql
 SELECT id, nombre_usuario, carne

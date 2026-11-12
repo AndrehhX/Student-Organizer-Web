@@ -1,24 +1,23 @@
-# Base de datos y persistencia MySQL
+# RF07 Gestión de tareas
 
-## Componentes
+## Qué hace
 
-- **MySQL:** almacena usuarios, cursos, tareas y calificaciones.
-- **Docker Desktop:** ejecuta MySQL localmente.
-- **DBeaver:** permite administrar y consultar la base.
-- **JDBC y Connector/J:** conectan Java con MySQL.
-- `ConexionBD.java`: crea las conexiones.
-- `RepositorioUsuariosMySQL.java`: guarda usuarios y valida credenciales.
-- `RepositorioCursosMySQL.java`: guarda y consulta cursos por usuario.
-- `PersistenciaTareasMySQL.java`: guarda, consulta y completa tareas.
-- `RepositorioCalificacionesMySQL.java`: guarda y consulta calificaciones.
-- `ControladorPromedios`: calcula promedios con las notas guardadas.
-- `ServiciosMySQL.java`: reúne los repositorios y controladores.
-- **Archivos SQL:** crean y actualizan las tablas y relaciones.
+En el dashboard, cada estudiante puede registrar una tarea con nombre, curso, fecha de entrega y prioridad. También puede consultar sus tareas y marcar una como completada.
 
-## Dificultades
+## Recorrido
 
-Configurar Docker y JDBC, aplicar migraciones, validar relaciones e integrar MySQL con el servidor.
+1. `tareas.js` recoge el formulario y envía la acción al servidor.
+2. `ServidorWeb` procesa las rutas `/api/tareas` y `/api/tareas/completar`.
+3. `ControladorTareasMySQL` valida que el curso pertenezca al usuario.
+4. `PersistenciaTareasMySQL` inserta o consulta filas en la tabla `tareas`.
+5. La pantalla actualiza la lista y el estado de la tarea.
 
-## Estado actual
+Cada consulta queda limitada al usuario con sesión activa. Las tareas nuevas deben tener un curso, una fecha válida y un nombre de hasta 150 caracteres.
 
-La base y los repositorios están implementados y probados. Falta verificar que el servidor use MySQL en todos los formularios.
+## Pruebas
+
+`PruebasTareas` cubre los datos y el estado de una tarea sin conectar con MySQL. `PruebaTareasMySQL` valida el guardado y la consulta real; requiere MySQL y agrega filas, por lo que se debe ejecutar en una base de pruebas.
+
+## Aporte de Luis
+
+El RF07 cubre el registro, consulta y finalización de tareas. El módulo usa MySQL y comparte con el resto del proyecto la sesión del usuario y la relación con cursos.

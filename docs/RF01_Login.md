@@ -1,41 +1,33 @@
-# RF01 - Iniciar sesión
+# RF01 Iniciar sesión
 
-## Qué hace
+## Cómo funciona
 
-El sistema muestra un formulario para que la persona escriba su usuario y contraseña. JavaScript revisa que los campos tengan información y envía esos datos al servidor Java.
+La pantalla inicial recoge usuario o correo y contraseña. JavaScript evita enviar campos vacíos y manda el formulario a `POST /api/login`.
 
-El `ControladorLogin` lee los usuarios del CSV. Cada contraseña ingresada pasa por `Seguridad` y se compara con el hash guardado. Si coincide, el controlador permite el acceso; si no, devuelve un mensaje de error.
+`ServidorWeb` pasa la solicitud a `ControladorLogin`. El controlador consulta `RepositorioUsuariosMySQL`, que busca al usuario en la tabla `usuarios` y compara el hash de la contraseña. Si las credenciales coinciden, el controlador crea un token aleatorio de sesión. El servidor lo devuelve en una cookie `HttpOnly` y `SameSite=Lax`; la sesión vence después de 30 minutos sin actividad.
 
-## Recorrido sencillo
+Si los datos no coinciden, no se crea una sesión. La pantalla muestra el resultado. El botón de cierre llama a `POST /api/logout` y elimina la sesión del servidor.
 
-```text
-HTML muestra el formulario
-        ↓
-JavaScript recoge los datos
-        ↓
-ServidorWeb recibe la petición
-        ↓
-ControladorLogin valida
-        ↓
-PersistenciaDatos lee usuarios.csv
-        ↓
-La página muestra el resultado
-```
+## Crear una cuenta
 
-## Cuenta de prueba
+La pantalla también ofrece un formulario de registro. Envía usuario, correo, contraseña y carné a `POST /api/usuarios`. El servidor valida los campos y el formato del correo; `RepositorioUsuariosMySQL` guarda la cuenta. Si el nombre o el correo ya existe, se devuelve un mensaje para elegir otro.
 
-- Usuario: `demo`
-- Contraseña: `demo123`
+## Partes principales
 
-## Casos probados
+- `index.html`, `estilos.css` y `app.js`: formulario, estilos, mensajes y solicitudes del navegador.
+- `ServidorWeb`: recibe login, registro y cierre de sesión.
+- `ControladorLogin`: valida el acceso y administra sesiones independientes.
+- `Usuario` y `Seguridad`: representan la cuenta y producen el hash de la contraseña.
+- `RepositorioUsuariosMySQL`: consulta y guarda usuarios en MySQL.
 
-- Campos vacíos.
-- Usuario que no existe.
-- Contraseña incorrecta.
-- Inicio de sesión correcto.
-- Creación automática del archivo CSV.
+## Pruebas
+
+Conviene probar campos vacíos, correo inválido o repetido, credenciales incorrectas, registro correcto, login por usuario y por correo, y cierre de sesión. Las pruebas de integración necesitan MySQL disponible y `DB_PASSWORD` configurada. Las cuentas ficticias se cargan manualmente desde `sql/datos_prueba.sql` cuando hacen falta.
+
+## Nota técnica
+
+El proyecto usa SHA-256 para esta entrega. Para un sistema real de cuentas se debería usar un algoritmo de almacenamiento de contraseñas diseñado para ello, con sal y factor de costo.
 
 ## Aporte de Andreh
 
-La parte de Andreh corresponde al RF01. Se preparó la interfaz del Login, se conectó con la lógica Java y se documentó el flujo y las pruebas. La estructura general de persistencia queda disponible para que el equipo la reutilice.
-
+El RF01 cubre la pantalla de acceso y su conexión con el servidor Java. La explicación se centra en el recorrido del formulario, la validación, la sesión y la separación entre interfaz y lógica.
