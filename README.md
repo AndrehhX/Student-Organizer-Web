@@ -4,7 +4,7 @@ Aplicación para organizar cursos, tareas y calificaciones. La interfaz está he
 
 ## Funciones disponibles
 
-- Crear cuenta, iniciar sesión y cerrar sesión.
+- Crear cuenta, iniciar sesión con usuario o correo y cerrar sesión.
 - Crear cursos y consultar sus tareas y calificaciones.
 - Registrar, consultar y completar tareas con fecha y prioridad.
 - Registrar calificaciones por curso y actividad.
@@ -44,6 +44,22 @@ powershell -ExecutionPolicy Bypass -File scripts\ejecutar.ps1
 ```
 
 El script pide la contraseña de MySQL de forma interactiva cuando `DB_PASSWORD` no está configurada. Después abre <http://localhost:8080>. Si no hay una cuenta preparada, elige **Crear cuenta**.
+
+El registro solicita usuario, correo, contraseña y carné. El correo también sirve para iniciar sesión; el proyecto no envía mensajes ni códigos de verificación.
+
+## Cuentas ficticias para pruebas
+
+Para una base que ya existe, ejecuta `sql/005_correo_usuarios.sql` desde DBeaver para agregar el correo sin borrar cuentas actuales. En una instalación nueva, `sql/esquema.sql` ya crea esa columna.
+
+Luego puedes cargar tres cuentas inventadas ejecutando `sql/datos_prueba.sql`. El script se puede repetir y no se ejecuta al iniciar la aplicación. Úsalo solo en desarrollo o pruebas:
+
+| Usuario | Correo | Contraseña |
+|---|---|---|
+| `ana.mendez` | `ana.mendez@example.test` | `Ana-Organiza-2026!` |
+| `carlos.ruiz` | `carlos.ruiz@example.test` | `Carlos-Tareas-2026!` |
+| `sofia.lopez` | `sofia.lopez@example.test` | `Sofia-Cursos-2026!` |
+
+Los correos usan el dominio reservado `.test`; son ficticios y no reciben mensajes.
 
 Para compilar sin iniciar el servidor:
 

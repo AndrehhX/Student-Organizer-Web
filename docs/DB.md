@@ -20,6 +20,12 @@ La aplicación requiere MySQL. `DB_PASSWORD` es obligatoria. `DB_HOST` es opcion
 
 Si MySQL corre en otra computadora, `DB_HOST` debe tener una dirección accesible desde la computadora donde corre Java. No se debe incluir la contraseña en archivos versionados, capturas ni comandos que queden guardados en el historial.
 
+## Correo y cuentas de prueba
+
+Para una base existente, ejecuta `sql/005_correo_usuarios.sql` una vez. Agrega `usuarios.correo` como columna opcional para conservar las cuentas antiguas, que pueden seguir entrando con su nombre de usuario. Los registros nuevos requieren un correo único.
+
+`sql/datos_prueba.sql` carga tres cuentas ficticias de forma manual y repetible. No se ejecuta al iniciar el sistema y debe usarse solo en una base de desarrollo o pruebas. Las credenciales están en el README.
+
 ## Estado
 
 El código conecta los módulos a repositorios MySQL. La compilación y las pruebas locales sin base se pueden ejecutar sin tocar registros. Las pruebas de integración deben correrse contra una instancia disponible y una base de pruebas; algunas insertan usuarios, cursos, tareas o calificaciones y no los eliminan al terminar.
