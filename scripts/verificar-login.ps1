@@ -15,7 +15,7 @@ try {
     $cliente.Dispose()
 }
 
-$usuario = Read-Host "Usuario registrado para probar el login"
+$usuario = Read-Host "Usuario o correo registrado para probar el login"
 $claveSegura = Read-Host "Contraseña de ese usuario" -AsSecureString
 $contrasena = [System.Net.NetworkCredential]::new("", $claveSegura).Password
 $claveSegura.Dispose()

@@ -405,20 +405,23 @@ try {
         );
 
         String nombre = datos.get("usuario");
+        String correo = datos.get("correo");
         String contrasena = datos.get("contrasena");
         String carne = datos.get("carne");
 
         if (nombre == null || nombre.trim().isEmpty()
+                || correo == null || correo.trim().isEmpty()
                 || contrasena == null || contrasena.trim().isEmpty()
                 || carne == null || carne.trim().isEmpty()) {
             responder(intercambio, 400,
-                    "{\"exitoso\":false,\"mensaje\":\"Usuario, contraseña y carné son obligatorios.\"}");
+                    "{\"exitoso\":false,\"mensaje\":\"Usuario, correo, contraseña y carné son obligatorios.\"}");
             return;
         }
 
         try {
             Usuario usuario = new Usuario(
                     nombre.trim(),
+                    correo.trim(),
                     contrasena,
                     carne.trim()
             );

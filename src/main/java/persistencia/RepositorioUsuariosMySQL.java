@@ -10,15 +10,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
  * Guarda y consulta usuarios en MySQL (tabla usuarios).
  *
  * Es el equivalente en MySQL de PersistenciaDatos (CSV).
- * No modifica el modelo Usuario: el ID de MySQL (usuarios.id)
- * se entrega por separado, porque es el que necesitan
- * tareas y calificaciones.
+ * El ID de MySQL (usuarios.id) se entrega por separado, porque
+ * es el que necesitan tareas y calificaciones.
  *
  * La contraseña nunca se guarda en texto plano: se usa
  * el mismo hash SHA-256 que ya genera el modelo Usuario.
@@ -41,7 +41,7 @@ public class RepositorioUsuariosMySQL {
      * Inserta un usuario nuevo y devuelve su ID (usuarios.id).
      *
      * @throws IllegalArgumentException si los datos no son válidos
-     *         o el nombre de usuario ya existe.
+     *         o el nombre de usuario/correo ya existe.
      */
     public long guardar(Usuario usuario) {
         if (usuario == null) {
@@ -53,12 +53,19 @@ public class RepositorioUsuariosMySQL {
         String nombre = validarTexto(
                 usuario.getNombreUsuario(), "El nombre de usuario"
         );
+        String correo = validarCorreo(usuario.getCorreo());
         String carne = validarTexto(usuario.getCarne(), "El carné");
         String hash = usuario.getContrasena();
 
         if (nombre.codePointCount(0, nombre.length()) > 100) {
             throw new IllegalArgumentException(
                     "El nombre de usuario admite hasta 100 caracteres."
+            );
+        }
+
+        if (correo.codePointCount(0, correo.length()) > 254) {
+            throw new IllegalArgumentException(
+                    "El correo admite hasta 254 caracteres."
             );
         }
 
@@ -77,8 +84,8 @@ public class RepositorioUsuariosMySQL {
 
         String sql =
                 "INSERT INTO usuarios "
-                + "(nombre_usuario, contrasena_hash, carne) "
-                + "VALUES (?, ?, ?)";
+                + "(nombre_usuario, correo, contrasena_hash, carne) "
+                + "VALUES (?, ?, ?, ?)";
 
         try (
             Connection conexion = bd.abrir();
@@ -88,8 +95,9 @@ public class RepositorioUsuariosMySQL {
             )
         ) {
             consulta.setString(1, nombre);
-            consulta.setString(2, hash);
-            consulta.setString(3, carne);
+            consulta.setString(2, correo);
+            consulta.setString(3, hash);
+            consulta.setString(4, carne);
 
             consulta.executeUpdate();
 
@@ -106,7 +114,7 @@ public class RepositorioUsuariosMySQL {
         } catch (SQLException error) {
             if (error.getErrorCode() == 1062) {
                 throw new IllegalArgumentException(
-                        "Ya existe un usuario con ese nombre.",
+                        "Ya existe un usuario con ese nombre o correo.",
                         error
                 );
             }
@@ -119,7 +127,7 @@ public class RepositorioUsuariosMySQL {
     }
 
     /**
-     * Valida usuario y contraseña.
+     * Valida el nombre de usuario o correo y la contraseña.
      *
      * Devuelve el ID del usuario (usuarios.id) si las credenciales
      * son correctas; vacío si el usuario no existe o la contraseña
@@ -135,7 +143,10 @@ public class RepositorioUsuariosMySQL {
 
         String sql =
                 "SELECT id, contrasena_hash "
-                + "FROM usuarios WHERE nombre_usuario = ?";
+                + "FROM usuarios "
+                + "WHERE nombre_usuario = ? OR correo = ? "
+                + "ORDER BY CASE WHEN correo = ? THEN 0 ELSE 1 END "
+                + "LIMIT 1";
 
         try (
             Connection conexion = bd.abrir();
@@ -143,6 +154,8 @@ public class RepositorioUsuariosMySQL {
                     conexion.prepareStatement(sql)
         ) {
             consulta.setString(1, nombreUsuario.trim());
+            consulta.setString(2, nombreUsuario.trim().toLowerCase(Locale.ROOT));
+            consulta.setString(3, nombreUsuario.trim().toLowerCase(Locale.ROOT));
 
             try (ResultSet filas = consulta.executeQuery()) {
                 if (!filas.next()) {
@@ -214,7 +227,7 @@ public class RepositorioUsuariosMySQL {
         }
 
         String sql =
-                "SELECT nombre_usuario, contrasena_hash, carne "
+                "SELECT nombre_usuario, correo, contrasena_hash, carne "
                 + "FROM usuarios WHERE id = ?";
 
         try (
@@ -231,6 +244,7 @@ public class RepositorioUsuariosMySQL {
 
                 return Optional.of(Usuario.desdeArchivo(
                         filas.getString("nombre_usuario"),
+                        filas.getString("correo"),
                         filas.getString("contrasena_hash"),
                         filas.getString("carne")
                 ));
@@ -252,5 +266,18 @@ public class RepositorioUsuariosMySQL {
         }
 
         return valor.trim();
+    }
+
+    private String validarCorreo(String correo) {
+        String valor = validarTexto(correo, "El correo")
+                .toLowerCase(Locale.ROOT);
+
+        if (!valor.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new IllegalArgumentException(
+                    "Escribe un correo válido."
+            );
+        }
+
+        return valor;
     }
 }

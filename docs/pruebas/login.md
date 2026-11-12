@@ -14,6 +14,6 @@
 
 ## Requisitos
 
-La autenticación actual consulta MySQL. Se necesita el servidor levantado, `DB_PASSWORD`, MySQL Connector/J y una cuenta registrada. No se crea automáticamente una cuenta demo desde CSV.
+La autenticación consulta MySQL y acepta el nombre de usuario o el correo. Se necesita el servidor levantado, `DB_PASSWORD`, MySQL Connector/J y una cuenta registrada. Para la presentación, ejecuta `sql/datos_prueba.sql` en una base de desarrollo o prueba; la aplicación no carga esas cuentas por sí sola.
 
 La prueba de integración `PruebasLogin` requiere `DB_PASSWORD` y una base MySQL accesible. La prueba modifica la base; úsala solo en una instancia de desarrollo o de pruebas.

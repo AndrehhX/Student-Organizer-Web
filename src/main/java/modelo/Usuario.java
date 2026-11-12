@@ -2,28 +2,52 @@ package modelo;
 
 import util.Seguridad;
 
+import java.util.Locale;
+
 public class Usuario {
     private String nombreUsuario;
+    private String correo;
     private String contrasena;
     private String carne;
 
-    public Usuario(String nombreUsuario, String contrasena, String carne) {
+    public Usuario(
+            String nombreUsuario,
+            String correo,
+            String contrasena,
+            String carne
+    ) {
         this.nombreUsuario = nombreUsuario;
+        this.correo = correo == null
+                ? null
+                : correo.trim().toLowerCase(Locale.ROOT);
         this.contrasena = Seguridad.codificar(contrasena);
         this.carne = carne;
     }
 
-    private Usuario(String nombreUsuario, String contrasenaCodificada,
-                     String carne, boolean contrasenaYaCodificada) {
+    private Usuario(
+            String nombreUsuario,
+            String correo,
+            String contrasenaCodificada,
+            String carne,
+            boolean contrasenaYaCodificada
+    ) {
         this.nombreUsuario = nombreUsuario;
+        this.correo = correo;
         this.contrasena = contrasenaCodificada;
         this.carne = carne;
     }
 
     public static Usuario desdeArchivo(String nombreUsuario,
+                                       String correo,
                                        String contrasenaCodificada,
                                        String carne) {
-        return new Usuario(nombreUsuario, contrasenaCodificada, carne, true);
+        return new Usuario(
+                nombreUsuario,
+                correo,
+                contrasenaCodificada,
+                carne,
+                true
+        );
     }
 
     public boolean autenticar(String nombreUsuario, String contrasena) {
@@ -39,6 +63,10 @@ public class Usuario {
         return contrasena;
     }
 
+    public String getCorreo() {
+        return correo;
+    }
+
     public String getCarne() {
         return carne;
     }
@@ -49,6 +77,12 @@ public class Usuario {
 
     public void setContrasena(String contrasena) {
         this.contrasena = Seguridad.codificar(contrasena);
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo == null
+                ? null
+                : correo.trim().toLowerCase(Locale.ROOT);
     }
 
     public void setCarne(String carne) {

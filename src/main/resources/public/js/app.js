@@ -6,6 +6,7 @@ const boton = formulario.querySelector('button');
 const mostrarRegistro = document.querySelector('#mostrar-registro');
 const formularioRegistro = document.querySelector('#registro-form');
 const registroUsuario = document.querySelector('#registro-usuario');
+const registroCorreo = document.querySelector('#registro-correo');
 const registroContrasena = document.querySelector('#registro-contrasena');
 const registroCarne = document.querySelector('#registro-carne');
 const registroMensaje = document.querySelector('#registro-mensaje');
@@ -76,6 +77,7 @@ formularioRegistro.addEventListener('submit', async (evento) => {
     evento.preventDefault();
 
     const usuario = registroUsuario.value.trim();
+    const correo = registroCorreo.value.trim();
     const contrasena = registroContrasena.value;
     const carne = registroCarne.value.trim();
 
@@ -87,12 +89,23 @@ formularioRegistro.addEventListener('submit', async (evento) => {
         return;
     }
 
+    if (!correo) {
+        mostrarMensajeRegistro('Completa todos los campos.', 'error');
+        return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+        mostrarMensajeRegistro('Escribe un correo valido.', 'error');
+        return;
+    }
+
     botonRegistro.disabled = true;
     mostrarMensajeRegistro('Guardando usuario...', '');
 
     try {
         const datos = new URLSearchParams({
             usuario,
+            correo,
             contrasena,
             carne
         });
@@ -116,7 +129,7 @@ formularioRegistro.addEventListener('submit', async (evento) => {
             registroContrasena.value = '';
             formularioRegistro.hidden = true;
             mostrarRegistro.hidden = false;
-            usuarioInput.value = usuario;
+            usuarioInput.value = correo;
             contrasenaInput.focus();
         }
     } catch (error) {

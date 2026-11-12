@@ -2,7 +2,7 @@
 
 ## Cómo funciona
 
-La pantalla inicial recoge usuario y contraseña. JavaScript evita enviar campos vacíos y manda el formulario a `POST /api/login`.
+La pantalla inicial recoge usuario o correo y contraseña. JavaScript evita enviar campos vacíos y manda el formulario a `POST /api/login`.
 
 `ServidorWeb` pasa la solicitud a `ControladorLogin`. El controlador consulta `RepositorioUsuariosMySQL`, que busca al usuario en la tabla `usuarios` y compara el hash de la contraseña. Si las credenciales coinciden, el controlador crea un token aleatorio de sesión. El servidor lo devuelve en una cookie `HttpOnly` y `SameSite=Lax`; la sesión vence después de 30 minutos sin actividad.
 
@@ -10,7 +10,7 @@ Si los datos no coinciden, no se crea una sesión. La pantalla muestra el result
 
 ## Crear una cuenta
 
-La pantalla también ofrece un formulario de registro. Envía usuario, contraseña y carné a `POST /api/usuarios`. El servidor valida que estén completos y `RepositorioUsuariosMySQL` guarda la cuenta. Si el nombre ya existe, se devuelve un mensaje para que se elija otro.
+La pantalla también ofrece un formulario de registro. Envía usuario, correo, contraseña y carné a `POST /api/usuarios`. El servidor valida los campos y el formato del correo; `RepositorioUsuariosMySQL` guarda la cuenta. Si el nombre o el correo ya existe, se devuelve un mensaje para elegir otro.
 
 ## Partes principales
 
@@ -22,7 +22,7 @@ La pantalla también ofrece un formulario de registro. Envía usuario, contrase�
 
 ## Pruebas
 
-Conviene probar campos vacíos, credenciales incorrectas, registro correcto, nombre repetido, login correcto y cierre de sesión. Las pruebas de integración necesitan MySQL disponible y `DB_PASSWORD` configurada. No se garantiza que exista una cuenta de demostración sembrada: se puede crear desde el formulario.
+Conviene probar campos vacíos, correo inválido o repetido, credenciales incorrectas, registro correcto, login por usuario y por correo, y cierre de sesión. Las pruebas de integración necesitan MySQL disponible y `DB_PASSWORD` configurada. Las cuentas ficticias se cargan manualmente desde `sql/datos_prueba.sql` cuando hacen falta.
 
 ## Nota técnica
 
