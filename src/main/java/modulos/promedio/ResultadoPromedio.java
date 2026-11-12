@@ -2,7 +2,13 @@ package modulos.promedio;
 
 import java.math.BigDecimal;
 
-
+/**
+ * RF12 - Calcular promedio.
+ *
+ * Resultado del promedio de un curso: identificador, nombre,
+ * promedio y cantidad de calificaciones usadas en el calculo.
+ * Es inmutable: no tiene setters.
+ */
 public class ResultadoPromedio {
 
 

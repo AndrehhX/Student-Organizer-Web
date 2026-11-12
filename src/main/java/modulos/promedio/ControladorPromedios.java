@@ -7,7 +7,19 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-
+/**
+ * RF12 - Calcular promedio.
+ *
+ * Consulta las calificaciones de un estudiante y obtiene sus promedios.
+ *
+ * - Valida los identificadores recibidos.
+ * - Consulta las notas en RepositorioCalificaciones (RF03).
+ * - Delega los calculos a CalculadoraPromedios.
+ *
+ * Depende de la interfaz del repositorio: funciona igual con
+ * RepositorioCalificacionesMySQL y con el repositorio en memoria
+ * de las pruebas. No guarda copias de las calificaciones.
+ */
 public class ControladorPromedios {
 
  

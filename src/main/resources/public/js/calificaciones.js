@@ -140,6 +140,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 'exito'
             );
 
+            // RF12: avisa a la tarjeta de promedio que hay una nota nueva.
+            document.dispatchEvent(new CustomEvent('calificaciones:actualizadas'));
+
             const actualizado = await cargarCalificaciones(false);
 
             if (!actualizado) {

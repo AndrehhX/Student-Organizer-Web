@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class PruebasPromedios {
 
@@ -73,6 +74,58 @@ public class PruebasPromedios {
             promedios.obtenerPromedioGeneral("");
             throw new AssertionError("Se acepto un usuario vacio");
         } catch (IllegalArgumentException esperado) {
+            // Validacion correcta
+        }
+
+        // 10. Punteos maximos distintos: (5 + 15) / (5 + 30) = 57.14
+        //     (promediando porcentajes daria 75: el parcial de 30 pesa mas)
+        List<Calificacion> distintos = new ArrayList<>();
+        distintos.add(nueva("Matematica", "5", "5"));
+        distintos.add(nueva("Matematica", "15", "30"));
+        comprobar(igual(calculadora.calcularPromedio(distintos).get(), "57.14"),
+            "El punteo maximo debe funcionar como peso");
+
+        // 11. Redondeo HALF_UP: 1 / 32 = 3.125 -> 3.13
+        List<Calificacion> mitad = new ArrayList<>();
+        mitad.add(nueva("Matematica", "1", "32"));
+        comprobar(igual(calculadora.calcularPromedio(mitad).get(), "3.13"),
+            "El redondeo debe ser HALF_UP");
+
+        // 12. El calculo no modifica las calificaciones originales
+        Calificacion original = nueva("Matematica", "12", "15");
+        List<Calificacion> unaNota = new ArrayList<>();
+        unaNota.add(original);
+        calculadora.calcularPromedioGeneral(unaNota);
+        comprobar(unaNota.size() == 1 && unaNota.get(0) == original
+            && igual(original.getNotaObtenida(), "12")
+            && igual(original.getNotaMaxima(), "15"),
+            "El calculo no debe modificar las notas");
+
+        // 13. Una nota nueva se refleja sin guardar copias: (9 + 7) / 20 = 80
+        registrar(calificaciones, "usuario001", "curso002", "Quimica", "7", "10");
+        comprobar(igual(promedios.obtenerPromedioCurso(
+            "usuario001", "curso002").get(), "80.00"),
+            "El promedio debe actualizarse con notas nuevas");
+
+        // 14. Rechazar una lista nula en la calculadora
+        try {
+            calculadora.calcularPromedio(null);
+            throw new AssertionError("Se acepto una lista nula");
+        } catch (IllegalArgumentException esperado) {
+            // Validacion correcta
+        }
+
+        // 15. Error claro si el repositorio devuelve null
+        RepositorioCalificaciones defectuoso = new RepositorioCalificaciones() {
+            public void guardar(Calificacion c) { }
+            public List<Calificacion> listarPorUsuario(String u) { return null; }
+            public List<Calificacion> listarPorCurso(String u, String c) { return null; }
+            public Optional<Calificacion> buscarPorId(String id) { return Optional.empty(); }
+        };
+        try {
+            new ControladorPromedios(defectuoso).obtenerPromedioGeneral("usuario001");
+            throw new AssertionError("Se acepto una respuesta nula del repositorio");
+        } catch (IllegalStateException esperado) {
             // Validacion correcta
         }
 
